@@ -1,0 +1,107 @@
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_RECOVERY_SEARCH;
+$this->headTitle($title);
+?>
+
+<?php echo $this->headLink()
+      ->prependStylesheet($this->basePath('css/jquery-ui.css')); ?>
+<?php echo $this->headScript()
+      ->prependFile($this->basePath('js/jquery-1.7.js'))
+      ->prependFile($this->basePath('js/jquery-ui.min.js'))
+      ->prependFile($this->basePath('js/jquery.ui.datepicker-ja.min.js')); ?>
+
+<script>
+      $(function() {
+        $("#datepicker").datepicker();
+      });
+      $(function() {
+        $("#datepicker_imp_s").datepicker();
+        $("#datepicker_imp_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_imp_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_imp_s").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_imp_e").datepicker();
+        $("#datepicker_imp_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_imp_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_imp_e").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_chk_s").datepicker();
+        $("#datepicker_chk_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_chk_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_chk_s").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_chk_e").datepicker();
+        $("#datepicker_chk_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_chk_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_chk_e").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+    </script>
+
+
+<div class="user">
+	<?php
+	echo '<p class="service" ></p>';
+	?>
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>取込結果検索：</h1>
+ 
+	<form class="search_form" action="<?php echo $this->const->_APP_RECOVERY_RESULT_PATH ?>?formvalue=selectItem" method="POST">
+		<p><span>　取込タイプ　：　</span>
+			<input type="checkbox" name="content_import_type1" value=1><?php echo $this->rform->content_import_type['1'] ?>
+			<input type="checkbox" name="content_import_type2" value=2><?php echo $this->rform->content_import_type['2'] ?>
+			<input type="checkbox" name="content_import_type3" value=3><?php echo $this->rform->content_import_type['3'] ?>
+		</p>
+		<p><span>　実行ステータス　：　</span>
+			<select name="content_state">
+				<?php 
+	 			$i = 0;
+	 			foreach($this->rform->status as $key => $item):
+	 				echo '<option value="'.$key.'">'.$item.'</option>';
+				 endforeach;
+				?>
+			</select>
+		</p>
+		<p><span>　取込期間　：　</span>
+			<input type="text" id="datepicker_imp_s" name="content_import_s" value="<?php echo $this->rform->content_list_date_s ?>">
+			～
+			<input type="text" id="datepicker_imp_e" name="content_import_e" value="<?php echo $this->rform->content_list_date_e ?>">
+		</p>
+		<p><span>　対象サービス　：　</span>
+			<select name="service_list">
+				<?php 
+				 $i = 0;
+				 foreach($this->sform->service_list as $id => $item):
+				 	$i++;
+				 	echo '<option value="'.$id.'">'.$item.'</option>';
+				 endforeach;
+				?>
+			</select>
+		</p>
+		
+		<input class="search" type="submit" value=" 検 索　">
+		<a class="reset_btm" href="<?php echo $this->const->_APP_RECOVERY_SEARCH_PATH ?>" >リセット</a>
+		
+		<input type="hidden" name="p" value="1">
+		
+ 	</form>
+ 
+</div>
+
+<div class="jumbotron">
+</div>

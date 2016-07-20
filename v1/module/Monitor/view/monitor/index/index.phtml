@@ -1,0 +1,144 @@
+<?php if(2 == $this->userData['user_auth']): ?>
+<script>
+<!--
+jQuery( function() {
+	jQuery('#licol4').attr('disabled', '');
+} );
+// -->
+</script>
+<?php endif; ?>
+
+
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_HOME;
+$this->headTitle($title);
+
+?>
+
+<link rel="stylesheet" href="<?php echo $this->const->_APP_HOME_PATH ?>css/jquery.ui.all.css" />
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>jquery-1.7.js"></script>
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>js/jquery.ui.core.js"></script>
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>js/jquery.ui.datepicker-ja.js"></script>
+<script>
+<!--
+jQuery( function() {
+    jQuery( '#jquery-ui-datepicker' ) . datepicker( {
+        showOn: "button",
+        buttonImage: "ui/datepicker/jquery-ui-datepicker-buttonimage.png",
+        buttonImageOnly: true
+    } );
+} );
+// -->
+</script>
+
+<script>
+    function unlock1(){
+    	$.ajax({
+            async: false,
+    		type: $("#unlock").attr("method"),
+    		url: $("#unlock").attr("action"),
+    		data: $("#unlock").serializeArray(),
+    		dataType: "json",
+    		cache: false,
+    		success: function(data, textStatus, jqXHR){
+    			if(data.resultMessage){
+    				console.log("ロック解除成功");
+    				alert('ロック解除成功');
+    			}else{
+    				console.log("ロック解除失敗");
+    				alert('ロック解除失敗');
+    			}
+    		},
+    		error: function(jqXHR, textStatus, errorThrown){
+    			console.log("予期せぬエラーが発生しました。");
+    		}
+        });
+    }
+</script>
+
+<div class="user">
+	<p class="service" ></p>
+	<?php 
+	$user_id =$this->userData['user_id'];
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>サービスの選択</h1>
+<?php
+ if(!empty($this->alert['1'])):
+ 	echo '<P class="select_srv"> '.$this->alert['1'].'</p>';
+ elseif(!empty($this->alert['2'])):
+ 	echo '<P class="select_srv"> '.$this->alert['2'].'</p>';
+ endif;
+?>
+ 
+	<form id="service_form" action="<?php echo $this->const->_APP_HOME_PATH ?>?formvalue=selectService" method="POST">
+		<p class="select_service_list">　サービス選択　：　
+		<select name="service_list">
+	<?php 
+	 $i = 0;
+	 foreach($this->form->service_list as $key => $item):
+	 	$i++;
+	 	$selected = "";
+	 	if($this->form->current_id==$key) { $selected = "selected"; }
+	 	echo '<option value="'.$key.'" '.$selected.'>'.$item.'</option>';
+	 endforeach;
+	?>
+		</select>
+		</p>
+		<?php if(1 == $this->user_auth && count($this->form->service_list) == 1): ?>
+		<input type="submit" value="設定" disabled="disabled">
+		<?php elseif(1 == $this->user_auth && count($this->form->service_list) > 1): ?>
+		<input type="submit" value="設定">
+		<?php else: ?>
+		<input type="submit" value="設定">
+		<?php endif; ?>
+
+ 	</form>
+ 
+<?php
+if(empty($this->alert['2'])) {
+	if(1 == $this->user_auth) {
+		echo '<P class="select_srv"> 監視対象サービスのコンテンツを閲覧できます。</p>';
+	}
+	elseif (2 == $this->user_auth) {
+	 if(!empty($this->form->current_id)):
+	 	echo '<P class="select_srv"> 監視対象のサービス（選択中）: '.$this->form->current_name.'</p>';
+	 else:
+	 	echo '<P class="select_srv"> 監視対象のサービスを選択してください。　</p>';
+	 endif;
+	}
+}
+?>
+
+
+<!-- 注意事項などの内容を表示 -->
+	<div class="note"></div>
+
+</div>
+<!-- 
+	<form id="unlock" action="<?php echo $this->const->_APP_HOME_UNLOCK_PATH ?>" method="POST">
+		<input type="hidden" name="user_id" value="<?php echo $user_id ?>">
+	</form>
+	<input type="button" value="ロック解除" onClick="javascript:unlock1();" display="none"/>
+ -->
+	
+<div class="jumbotron">
+<?php
+if(!empty($this->rpo_count)) {
+	echo '<p>監視報告していないコンテンツがあります。　詳細画面より監視報告を行ってい下さい。 </p>';
+}
+?>
+    <p></p>
+    <p></p>
+</div>
+

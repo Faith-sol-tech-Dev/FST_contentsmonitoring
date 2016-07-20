@@ -1,0 +1,83 @@
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_RECOVERY_DETAIL;
+$this->headTitle($title);
+$flag = false;
+?>
+
+<link rel="stylesheet" href="<?php echo $this->const->_APP_HOME_PATH ?>css/jquery.ui.all.css" />
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>jquery-1.7.js"></script>
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>js/jquery.ui.core.js"></script>
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>js/jquery.ui.datepicker-ja.js"></script>
+<script>
+<!--
+jQuery( function() {
+    jQuery( '#jquery-ui-datepicker' ) . datepicker( {
+        showOn: "button",
+        buttonImage: "ui/datepicker/jquery-ui-datepicker-buttonimage.png",
+        buttonImageOnly: true
+    } );
+} );
+// -->
+</script>
+
+<div class="user">
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>取込結果詳細：</h1>
+ 	<div class="contents_activity">
+ 		<p><span>　バッチ番号　：　</span>
+ 			<?php echo $this->rform->content_search_result['batch_id']?></p>
+ 		<p><span>　対象サービス　：　</span>
+ 			<?php echo $this->sform->service_list[$this->rform->content_search_result['service_id']] ?></p>
+ 	</div>
+
+	<div class="contents_comment">
+		<p id="alert_msg"><?php echo $this->display_comment_msg ?></p>
+		
+		<form class="search_form" action="<?php echo sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result["batch_id"], $this->rform->content_search_result["contents_id"]) ?>&formvalue=reload" method="POST">	
+			<div>
+				<p><span>　コンテンツNo　：　</span><?php echo $this->rform->content_search_result['contents_id'] ?></p>
+				<p><span>　取込日時　：　</span><?php echo $this->rform->content_search_result['import_date'] ?></p>
+				<p><span>　リカバリステータス　：　</span><?php if(!empty($this->rform->content_search_result['recovery_state']) && $this->rform->content_search_result['recovery_state'] != 54){ echo 'データ再取り込み'; }
+													   else { echo 'リカバリ再実行済み'; }?></p>
+				
+				<?php if(!isset($this->rform->insert_result)){?>
+					<p><span>　取込エラー　：　</span><?php echo $this->rform->error_reason[$this->rform->content_search_result['error_reason']] ?></p>
+					<input class="search" type="submit" value=" 再取込　">
+					<p><span>　動画URL　：　</span><?php echo $this->rform->content_search_result['movie_url'] ?></p>
+					<p><span>　画像URL　：　</span><?php echo $this->rform->content_search_result['image_url'] ?></p>
+					<p><span>　タイトル　：　</span><?php echo $this->rform->content_search_result['title'] ?></p>
+					<p><span>　コメント　：　</span><?php echo $this->rform->content_search_result['comment'] ?></p>
+					<p><span>　作成日時　：　</span><?php echo $this->rform->content_search_result['create_date'] ?></p>
+				<?php } else if($this->rform->insert_result == true){?>
+					<p>再取込処理が正常に終了しました。</p>
+					<?php echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result['batch_id'], $this->rform->content_search_result['service_id']).'">戻る</td>';?>
+				<?php } else {?>
+					<p>再取込処理に失敗しました。</p>
+					<?php echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result['batch_id'], $this->rform->content_search_result['service_id']).'">戻る</td>';?>
+				<?php }?>
+			
+			</div>
+		</form>
+
+	</div>
+
+</div>
+
+<div class="jumbotron">
+    <h1><?php echo sprintf($this->translate('Welcome to %sZend Framework 2%s'), '<span class="zf-green">', '</span>') ?></h1>
+    <p><?php echo sprintf($this->translate('Congratulations! You have successfully installed the %sZF2 Skeleton Application%s. You are currently running Zend Framework version %s. This skeleton can serve as a simple starting point for you to begin building your application on ZF2.'), '<a href="https://github.com/zendframework/ZendSkeletonApplication" target="_blank">', '</a>', \Zend\Version\Version::VERSION) ?></p>
+    <p><a class="btn btn-success btn-lg" href="https://github.com/zendframework/zf2" target="_blank"><?php echo $this->translate('Fork Zend Framework 2 on GitHub') ?> &raquo;</a></p>
+</div>

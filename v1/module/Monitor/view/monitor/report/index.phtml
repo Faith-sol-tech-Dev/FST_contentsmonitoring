@@ -1,0 +1,167 @@
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_CONTENTS_REPORT;
+$this->headTitle($title);
+?>
+
+<?php echo $this->headLink()
+      ->prependStylesheet($this->basePath('css/jquery-ui.css')); ?>
+<?php echo $this->headScript()
+      ->prependFile($this->basePath('js/jquery-1.7.js'))
+      ->prependFile($this->basePath('js/jquery-ui.min.js'))
+      ->prependFile($this->basePath('js/jquery.ui.datepicker-ja.min.js')); ?>
+
+<script>
+      $(function() {
+        $("#datepicker").datepicker();
+      });
+      $(function() {
+        $("#datepicker_tot_s").datepicker();
+        $("#datepicker_tot_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_tot_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_tot_s").datepicker("option", "buttonImage", '/v1/img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_tot_e").datepicker();
+        $("#datepicker_tot_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_tot_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_tot_e").datepicker("option", "buttonImage", '/v1/img/ico_calendar.png');
+      });
+</script>
+
+<script>
+	function sendpage(page_no){
+		document.form.p.value = page_no;
+		document.form.action = "<?php echo $this->const->_APP_CONTENTS_REPORT_PATH ?>?formvalue=pagination";
+		document.form.submit();
+	}
+</script>
+
+<script>
+	function actionAggregate(){
+		document.form.action = "<?php echo $this->const->_APP_CONTENTS_REPORT_PATH ?>?formvalue=selectItem";
+	}
+</script>
+<script>
+	function actionOutput(){
+		document.form.action = "<?php echo APP_PATH . 'report/output' ?>";
+	}
+</script>
+
+<div class="user">
+	<?php
+	// 監視対象のサービスを表示
+	$svc_name =$this->sform->current_name;
+	echo '<p class="service" > 監視対象サービス　：　'.$svc_name.'</p>';
+	?>
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>コンテンツ集計：</h1>
+ 
+	<form name="form" class="search_form" action="" method="POST">
+		<p><span>　集計期間　：　</span>
+			<input type="text" id="datepicker_tot_s" name="content_text_totDate_str" value="<?php echo $this->rform->current_text_totDate_str ?>">
+			～
+			<input type="text" id="datepicker_tot_e" name="content_text_totDate_end" value="<?php echo $this->rform->current_text_totDate_end ?>">
+		</p>
+		<p><span>　コンテンツ種別　：　</span>
+			<?php 
+			$cheched = 'checked="checked"';
+			list($mode1, $mode2, $mode3) = array($cheched,$cheched,$cheched); 
+			if(empty($this->rform->current_list_type_1)) { $mode1=""; }
+			if(empty($this->rform->current_list_type_2)) { $mode2=""; }
+			if(empty($this->rform->current_list_type_3)) { $mode3=""; }
+			?>
+			<input type="checkbox" name="content_list_type_1" value="1" <?php echo $mode1 ?>><?php echo $this->rform->content_list_type['1'] ?>
+			<input type="checkbox" name="content_list_type_2" value="2" <?php echo $mode2 ?>><?php echo $this->rform->content_list_type['2'] ?>
+			<input type="checkbox" name="content_list_type_3" value="3" <?php echo $mode3 ?>><?php echo $this->rform->content_list_type['3'] ?>
+		</p>
+		<p id="search_error_msg"><?php echo $this->search_msg ?></p>
+		<input id="aggregate" class="search" type="submit" value=" 集 計　" onclick="actionAggregate()" >
+		<a class="reset_btm" href="<?php echo $this->const->_APP_CONTENTS_REPORT_PATH ?>" >リセット</a>
+		<input class="search" type="submit" value=" Excel出力　" onclick="actionOutput()" >
+
+	<input type="hidden" name="hd_content_list_type_1" value="<?php echo $this->rform->current_list_type_1 ?>">
+	<input type="hidden" name="hd_content_list_type_2" value="<?php echo $this->rform->current_list_type_2 ?>">
+	<input type="hidden" name="hd_content_list_type_3" value="<?php echo $this->rform->current_list_type_3 ?>">
+	<input type="hidden" name="hd_content_text_totDate_str" value="<?php echo $this->rform->current_text_totDate_str ?>">
+	<input type="hidden" name="hd_content_text_totDate_end" value="<?php echo $this->rform->current_text_totDate_end ?>">
+	<input type="hidden" name="p" value="1">
+ 	</form>
+
+</div>
+
+<div class="result_search">
+	<p id="alert_msg"><?php echo $this->display_msg ?></p>
+
+	<h3>集計結果：</h3>
+	<?php
+		if( $this->rform->content_report_count > 0 ):
+			//　検索結果を表示
+	?>
+		<div class="result_cnt">
+			<?php if($this->pagination->intLimitStart() + (int)$this->rform->content_report_count <= $this->pagination->maxcount()): ?>
+				<p>コンテンツ件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->intLimitStart() + (int)$this->rform->content_report_count)?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php else: ?>
+				<p>コンテンツ件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->maxcount())?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php endif; ?>
+		</div>
+		<div class="result_area">
+			<!-- <p class="pager"> <?php echo ページャ?></p> -->
+			<p class="pager"> <?php $this->pagination->Create() ?> </p>
+			
+			<table class="tbl_contents">
+				<tr>
+				<th class="col1">NO</th>
+				<th class="col2">取込日</th>
+				<th class="col3">監視総件数</th>
+				<th class="col4">動画件数</th>
+				<th class="col5">画像件数</th>
+				<th class="col6">コメント</th>
+				<th class="col7">未監視</th>
+				</tr>
+			<?php
+				// 検索結果のコンテンツデータのループ
+			$aryData = array_slice($this->rform->content_report, $this->pagination->intLimitStart(), $this->pagination->intLimitCount());
+			foreach( $aryData as $item):
+				echo '<tr>';
+				//No
+				echo '<td class="no">'.$item["ROW_NUM"].'</td>';
+				//取込日
+				echo '<td class="import_ym">'.$item["import_date"].'</td>';
+				//監視総件数
+				echo '<td class="sum">'.$item["sumcnt"].'</td>';
+				//動画件数
+				echo '<td class="movie_cnt">'.$item["m_sumcnt_already"]."/".$item["m_sumcnt"].'</td>';
+				//画像件数
+				echo '<td class="image_cnt">'.$item["i_sumcnt_already"]."/".$item["i_sumcnt"].'</td>';
+				//コメント
+				echo '<td class="comment_cnt">'.$item["c_sumcnt_already"]."/".$item["c_sumcnt"].'</td>';
+				//未監視
+				echo '<td class="yet_cnt">'.$item["yet_check_sumcnt"].'</td>';
+				
+				echo '</tr>';
+
+			endforeach;
+			?>
+			</table>
+		</div>
+	<?php else: ?>
+		<div class="result_cnt">
+			<p>コンテンツ件数:　0件 </p>
+		</div>
+	<?php endif; ?>
+
+</div>
+

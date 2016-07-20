@@ -1,0 +1,238 @@
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_CONTENTS_RESULT;
+$this->headTitle($title);
+?>
+
+<?php echo $this->headLink()
+      ->prependStylesheet($this->basePath('css/jquery-ui.css')); ?>
+<?php echo $this->headScript()
+      ->prependFile($this->basePath('js/jquery-1.7.js'))
+      ->prependFile($this->basePath('js/jquery-ui.min.js'))
+      ->prependFile($this->basePath('js/jquery.ui.datepicker-ja.min.js')); ?>
+
+<script>
+      $(function() {
+        $("#datepicker").datepicker();
+      });
+      $(function() {
+        $("#datepicker_imp_s").datepicker();
+        $("#datepicker_imp_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_imp_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_imp_s").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_imp_e").datepicker();
+        $("#datepicker_imp_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_imp_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_imp_e").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_chk_s").datepicker();
+        $("#datepicker_chk_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_chk_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_chk_s").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_chk_e").datepicker();
+        $("#datepicker_chk_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_chk_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_chk_e").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+</script>
+
+<script>
+	function sendpage(page_no){
+		document.form.p.value = page_no;
+		document.form.action = "<?php echo $this->const->_APP_CONTENTS_RESULT_PATH ?>?formvalue=pagination"
+		document.form.submit();
+	}
+</script>
+
+
+<div class="user">
+	<?php
+	// 監視対象のサービスを表示
+	$svc_name =$this->sform->current_name;
+	echo '<p class="service" > 監視対象サービス　：　'.$svc_name.'</p>';
+	?>
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>コンテンツ検索：</h1>
+ 
+	<form name="form" class="search_form" action="<?php echo $this->const->_APP_CONTENTS_RESULT_PATH ?>?formvalue=selectItem" method="POST">
+		<p><span class="input_lb">　コンテンツの種類　：</span>
+		   <span class="input">
+			<?php 
+			$cheched = 'checked="checked"';
+			list($type1, $type2, $type3) = array("","","");
+			if($this->cform->current_list_type==1) { $type1=$cheched; }
+			elseif($this->cform->current_list_type==2) { $type2=$cheched; }
+			elseif($this->cform->current_list_type==3) { $type3=$cheched; }
+			else { $type1=$cheched; }
+			?>
+			<input id="content_list_type_1" type="radio" name="content_list_type" value=1 <?php echo $type1 ?>><?php echo $this->cform->content_list_type['1'] ?>
+			<input id="content_list_type_2" type="radio" name="content_list_type" value=2 <?php echo $type2 ?>><?php echo $this->cform->content_list_type['2'] ?>
+			<input id="content_list_type_3" type="radio" name="content_list_type" value=3 <?php echo $type3 ?>><?php echo $this->cform->content_list_type['3'] ?>
+		   </span>
+		</p>
+		<p><span class="input_lb">　監視状態　：</span>
+		   <span class="input">
+			<?php 
+			list($mode1, $mode2, $mode3) = array("","",""); 
+			if($this->cform->current_list_mode1==1) { $mode1=$cheched; }
+			if($this->cform->current_list_mode2==3) { $mode2=$cheched; }
+			if($this->cform->current_list_mode3==2) { $mode3=$cheched; }
+
+			?>
+			<input type="checkbox" name="content_list_mode1" value=1 <?php echo $mode1 ?>><?php echo $this->cform->content_list_mode['1'] ?>
+			<input type="checkbox" name="content_list_mode2" value=3 <?php echo $mode2 ?>><?php echo $this->cform->content_list_mode['3'] ?>
+			<input type="checkbox" name="content_list_mode3" value=2 <?php echo $mode3 ?>><?php echo $this->cform->content_list_mode['2'] ?>
+		   </span>
+		</p>
+		<p><span class="input_lb">　コンテンツ状態　：　</span>
+		   <span class="input">
+			<?php 
+			list($stats1, $stats2, $stats3) = array("","",""); 
+			if($this->cform->current_list_stats1==2) { $stats1=$cheched; }
+			if($this->cform->current_list_stats2==3) { $stats2=$cheched; }
+			if($this->cform->current_list_stats3==1) { $stats3=$cheched; }
+			//else { $stats1=$cheched; }
+			?>
+			<input type="checkbox" name="content_list_stats1" value=2 <?php echo $stats1 ?>><?php echo $this->cform->content_list_stats['2'] ?>
+			<input type="checkbox" name="content_list_stats2" value=3 <?php echo $stats2 ?>><?php echo $this->cform->content_list_stats['3'] ?>
+			<input type="checkbox" name="content_list_stats3" value=1 <?php echo $stats3 ?>><?php echo $this->cform->content_list_stats['1'] ?>
+		   </span>
+		</p>
+		<p><span class="input_lb">　取込期間　：　</span>
+		   <span class="input">
+			<input type="text" id="datepicker_imp_s" name="content_text_impDate_str" value="<?php echo $this->cform->current_text_impDate_str ?>">
+			～
+			<input type="text" id="datepicker_imp_e" name="content_text_impDate_end" value="<?php echo $this->cform->current_text_impDate_end ?>">
+		   </span>
+		</p>
+		<p><span class="input_lb">　チェック期間　：　</span>
+		   <span class="input">
+			<input type="text" id="datepicker_chk_s" name="content_text_ckDate_str" value="<?php echo $this->cform->current_text_ckDate_str ?>">
+			～
+			<input type="text" id="datepicker_chk_e" name="content_text_ckDate_end" value="<?php echo $this->cform->current_text_ckDate_end ?>">
+		   </span>
+		</p>
+		<p><span class="input_lb">　表示件数　：　</span>
+		   <span class="input">
+		<select name="content_list_display_cnt">
+	<?php 
+	 $i = 0;
+	 foreach($this->cform->content_list_display_cnt as $item):
+	 	$i++;
+	    $selected = "";
+	    if( $item==$this->cform->current_list_display_cnt ) { $selected = "selected"; }
+	 	echo '<option value="'.$i.'" '.$selected.'>'.$item.'件 </option>';
+	 endforeach;
+	?>
+		</select>
+		   </span>
+		</p>
+		<p id="search_error_msg"><?php echo $this->search_msg ?></p>
+		<input class="search" type="submit" value="検 索">
+		<a class="reset_btm" href="<?php echo $this->const->_APP_CONTENTS_SEARCH_PATH ?>" >リセット</a>
+
+	<input type="hidden" name="hd_content_list_type" value="<?php echo $this->cform->current_list_type ?>">
+	<input type="hidden" name="hd_content_list_mode1" value="<?php echo $this->cform->current_list_mode1 ?>">
+	<input type="hidden" name="hd_content_list_mode2" value="<?php echo $this->cform->current_list_mode2 ?>">
+	<input type="hidden" name="hd_content_list_mode3" value="<?php echo $this->cform->current_list_mode3 ?>">
+	<input type="hidden" name="hd_content_list_stats1" value="<?php echo $this->cform->current_list_stats1 ?>">
+	<input type="hidden" name="hd_content_list_stats2" value="<?php echo $this->cform->current_list_stats2 ?>">
+	<input type="hidden" name="hd_content_list_stats3" value="<?php echo $this->cform->current_list_stats3 ?>">
+	<input type="hidden" name="hd_content_text_impDate_str" value="<?php echo $this->cform->current_text_impDate_str ?>">
+	<input type="hidden" name="hd_content_text_impDate_end" value="<?php echo $this->cform->current_text_impDate_end ?>">
+	<input type="hidden" name="hd_content_text_ckDate_str" value="<?php echo $this->cform->current_text_ckDate_str ?>">
+	<input type="hidden" name="hd_content_text_ckDate_end" value="<?php echo $this->cform->current_text_ckDate_end ?>">
+	<input type="hidden" name="hd_content_list_display_cnt" value="<?php echo $this->cform->current_list_display_cnt ?>">
+	<input type="hidden" name="p" value="<?php echo $this->cform->current_page_no ?>">
+	
+ 	</form>
+
+</div>
+
+<div class="result_search">
+	<p id="alert_msg"><?php echo $this->display_msg ?></p>
+
+	<h3>検索結果：</h3>
+	<?php
+		if( empty($this->display_msg) && $this->cform->content_search_result_list_cnt > 0 ):
+			//　検索結果を表示
+	?>
+		<div class="result_cnt">
+			<?php if($this->pagination->intLimitStart() + (int)$this->cform->current_list_display_cnt <= $this->pagination->maxcount()): ?>
+				<p>コンテンツ件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->intLimitStart() + (int)$this->cform->current_list_display_cnt)?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php else: ?>
+				<p>コンテンツ件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->maxcount())?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php endif; ?>
+		</div>
+		<div class="result_area">
+			<!-- <p class="pager"> <?php echo ページャ?></p> -->
+			<p class="pager"> <?php $this->pagination->Create() ?> </p>
+			
+			<table class="tbl_contents">
+				<tr>
+				<th class="col1">NO</th>
+				<th class="col2">サービス名</th>
+				<th class="col3">種別</th>
+				<th class="col4">タイトル</th>
+				<th class="col5">投稿者</th>
+				<th class="col6">投稿日時</th>
+				<th class="col7">ステータス</th>
+				<th class="col8"></th>
+				</tr>
+			<?php
+				// 検索結果のコンテンツデータのループ
+			//$aryData = array_slice((array)$this->cform->content_search_result_list, $this->pagination->intLimitStart(), $this->pagination->intLimitCount());
+			$aryData = array_slice((array)$this->cform->content_search_result_list, $this->pagination->intLimitStart(), $this->cform->current_list_display_cnt);
+			foreach( $aryData as $item):
+				echo '<tr>';
+				//No
+				echo '<td class="no">'.$item["ROW_NUM"].'</td>';
+				//サービス名
+				if(isset($item["service_name"])) echo '<td class="svc_name">'.$item["service_name"].'</td>';
+				//種別
+				//$contents_type = $this->cform->content_list_type[$item["contents_type"]];
+				if(isset($item["contents_type"])) {
+					$contents_type = $item["contents_type"];
+					echo '<td class="type">'.$this->cform->content_list_type[$contents_type].'</td>';
+				}
+				//タイトル
+				if(isset($item["title"])) echo '<td class="title">'.$item["title"].'</td>';
+				//投稿者
+				if(isset($item["name"])) echo '<td class="usr_name">'.$item["name"].'</td>';
+				//投稿日時
+				if(isset($item["create_date"])) echo '<td class="date">'.$item["create_date"].'</td>';
+				//ステータス
+				if(isset($item["check_state"])) echo '<td class="state">'.$this->cform->content_list_mode[$item["check_state"]].'</td>';
+				//URL
+				if(isset($item["contents_id"])) echo '<td class="url"><a href="'.sprintf($this->const->_APP_CONTENTS_DETAIL_PATH, $item["contents_id"]).'">&gt;&gt;</td>';
+				echo '</tr>';
+
+			endforeach;
+			?>
+			</table>
+		</div>
+	<?php else: ?>
+		<div class="result_cnt">
+			<p>コンテンツ件数:　0件 </p>
+		</div>
+	<?php endif; ?>
+
+</div>
+

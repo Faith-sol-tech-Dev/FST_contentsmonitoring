@@ -1,0 +1,88 @@
+<?php echo $this->doctype(); ?>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <?php echo $this->headTitle('ZF2 '. $this->translate('Skeleton Application'))->setSeparator(' - ')->setAutoEscape(false) ?>
+
+        <?php echo $this->headMeta()
+            ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ?>
+
+        <!-- Le styles -->
+        <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+                        ->prependStylesheet($this->basePath('css/fst-style.css'))
+        				->prependStylesheet($this->basePath('css/style.css'))
+                        ->prependStylesheet($this->basePath('css/bootstrap-theme.min.css'))
+                        ->prependStylesheet($this->basePath('css/bootstrap.min.css')) ?>
+
+        <!-- Scripts -->
+        <?php echo $this->headScript()
+            ->prependFile($this->basePath('js/bootstrap.min.js'))
+            ->prependFile($this->basePath('js/jquery.min.js'))
+            ->prependFile($this->basePath('js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+            ->prependFile($this->basePath('js/html5shiv.min.js'),   'text/javascript', array('conditional' => 'lt IE 9',))
+        ; ?>
+
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="<?php echo $this->url('home') ?>"><img src="<?php echo $this->basePath('img/zf2-logo.png') ?>" alt="FST Contents Monitor"/><b>&nbsp;<?php echo $this->translate('コンテンツ監視システム') ?></b></a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                    	<?php
+                    		$home = "";
+                    		$content = "";
+                    		$report = "";
+                    		$service = "";
+                    		$user = "";
+                    		$recovery = "";
+                    		if(strpos($_SERVER['REQUEST_URI'], '/content/')) { $content='class="active"'; }
+                    		elseif(strpos($_SERVER['REQUEST_URI'], '/report/')) { $report='class="active"'; }
+                    		elseif(strpos($_SERVER['REQUEST_URI'], '/service/')) { $service='class="active"'; }
+                    		elseif(strpos($_SERVER['REQUEST_URI'], '/user/')) { $user='class="active"'; }
+                    		elseif(strpos($_SERVER['REQUEST_URI'], '/recovery/')) { $recovery='class="active"'; }
+                    		else { $home='class="active"'; }
+        				?>
+                        <li <?php echo $home ?>><a href="<?php echo $this->url('home') ?>"><?php echo $this->translate('Home') ?></a></li>
+                        <li <?php echo $content ?>><a href="/v1/monitor/content/search/"><?php echo $this->translate('Contents Search') ?></a></li>
+                        <li <?php echo $report ?>><a href="/v1/monitor/report/"><?php echo $this->translate('Contents Report') ?></a></li>
+                        <li <?php echo $service ?>><a href="/v1/monitor/service/"><?php echo $this->translate('Service') ?></a></li>
+                        <li <?php echo $user ?>><a href="/v1/monitor/user/"><?php echo $this->translate('Member') ?></a></li>
+                        <li <?php echo $recovery ?>><a href="/v1/monitor/recovery/"><?php echo $this->translate('Recovery') ?></a></li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+        <div class="container">
+        
+<!-- /Main Contents Area start -->
+
+		<?php
+		$this->headTitle("ERROR");
+		?>
+
+		<div class="jumbotron">
+		    <h1>アクセス権限がありません。</h1>
+		    <p></p>
+		    <p></p>
+		</div>
+
+<!-- /Main Contents Area end -->
+            <hr>
+            <footer>
+                <p> Copyright &copy; 2005 - <?php echo date('Y') ?> &nbsp;  Faith - Solution - Technologies  &nbsp; <?php echo $this->translate('All rights reserved.') ?></p>
+            </footer>
+        </div> <!-- /container -->
+        <?php echo $this->inlineScript() ?>
+    </body>
+</html>

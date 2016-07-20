@@ -1,0 +1,347 @@
+<?php
+
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_CONTENTS_DETAIL;
+$this->headTitle($title);
+?>
+
+<link rel="stylesheet" href="<?php echo $this->const->_APP_HOME_PATH ?>css/jquery.ui.all.css" />
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>jquery-1.7.js"></script>
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>js/jquery.ui.core.js"></script>
+<script type="text/javascript" src="<?php echo $this->const->_APP_HOME_PATH ?>js/jquery.ui.datepicker-ja.js"></script>
+<script>
+<!--
+jQuery( function() {
+    jQuery( '#jquery-ui-datepicker' ) . datepicker( {
+        showOn: "button",
+        buttonImage: "ui/datepicker/jquery-ui-datepicker-buttonimage.png",
+        buttonImageOnly: true
+    } );
+} );
+
+function ChangeTab(tabname) {
+   // 全部消す
+   $('#tab1').css("display", "none");
+   $('#tab2').css("display", "none");
+   $('#tab3').css("display", "none");
+   $('#'+tabname).css("display", "block");
+}
+// -->
+</script>
+
+<script>
+    function update(){
+
+    	$.ajax({
+            async: false,
+    		type: $("#update").attr("method"),
+    		url: $("#update").attr("action"),
+    		data: $("#update").serializeArray(),
+    		dataType: "json",
+    		cache: false,
+    		success: function(data, textStatus, jqXHR){
+        		console.log(data.getBody);
+    			if(data.result){
+    				console.log("更新しました。");
+    				alert('更新成功');
+    			}else{
+    				console.log("更新失敗しました。");
+    				alert('更新失敗');
+    			}
+    		},
+    		error: function(jqXHR, textStatus, errorThrown){
+    			console.log("予期せぬエラーが発生しました!");
+    		}
+        });
+    }
+</script>
+
+<script>
+$(window).on('beforeunload', function(event) {
+
+	$.ajax({
+        async: false,
+		type: $("#unlockform").attr("method"),
+		url: $("#unlockform").attr("action"),
+		data: $("#unlockform").serializeArray(),
+		dataType: "json",
+		cache: false,
+		success: function(data, textStatus, jqXHR){
+			if(data.resultMessage){
+				console.log("ロック解除成功");
+			}else{
+				console.log("ロック解除失敗");
+			}
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			console.log("予期せぬエラーが発生しました。");
+			console.log("jqXHR : " + jqXHR.status);
+			console.log("textStatus : " + textStatus);
+			console.log("errorThrown : " + errorThrown.message);
+		}
+    });
+	return;
+});
+</script>
+
+<script>
+	function report(){
+		$.ajax({
+	        async: false,
+			type: $("#report").attr("method"),
+			url: $("#report").attr("action"),
+			dataType: "json",
+			cache: false,
+			success: function(data, textStatus, jqXHR){
+				console.log(data.resultMessage);
+				if(data.result){
+	        		console.log(data.getBody);
+					alert("お客様に監視報告のリクエストを送信しました。");
+				}else{
+	        		console.log(data.getBody);
+	        		if(""==data.result_message) {
+	        			alert("監視報告のリクエスト送信が出来ませんでした。");
+	        		}
+	        		else {
+						alert(data.result_message);
+	        		}
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log("予期せぬエラーが発生しました。");
+				console.log("jqXHR : " + jqXHR.status);
+				console.log("textStatus : " + textStatus);
+				console.log("errorThrown : " + errorThrown.message);
+			}
+	    });
+	}
+</script>
+
+<div class="user">
+	<?php
+	// 監視対象のサービスを表示
+	$svc_name =$this->sform->current_name;
+	echo '<p class="service" > 監視対象サービス　：　'.$svc_name.'</p>';
+	?>
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>コンテンツ詳細：</h1>
+	<div class="report_action">
+		<input type="button" value="監視報告" onClick="javascript:report();" />
+	</div>
+	
+ 	<div class="contents_activity">
+ 		<p><span>取込日時： </span><?php echo $this->cform->content_detail_imp_date ?></p>
+ 		<p><span>コンテンツ作成日時： </span><?php echo $this->cform->content_detail_creat_date ?></p>
+ 	</div>
+ 
+ 	<form id="update" class="report_form" action="<?php echo $this->const->_APP_CONTENTS_UPDATE_PATH ?>" method="POST">
+ 		<?php
+	 		$state = false;
+			if( 2 == $this->cform->content_detail_display_ary['check_state'] ) {
+				$state = true; //監視済み
+			}
+			else {
+				if( 2 != $this->userData['user_auth'] ) {
+					$state = true; //更新権限なし
+				}
+			}
+ 		?>
+		<p><span>　監視状態　：　</span> <?php if( $state ) { echo '監視済み'; }
+										  else { echo ($this->cform->lock_state) ? '監視中' : $this->cform->lock_data['user_id'].'が監視をしています。'; } ?></p>
+		<p><span>　コンテンツ状態　：　</span>
+			<?php 
+			$cheched = 'checked="checked"';
+			list($mode1, $mode2, $mode3) = array("","",""); 
+			if($this->cform->content_detail_display_ary['check_result']==1) { $mode1=$cheched; }
+			elseif($this->cform->content_detail_display_ary['check_result']==2) { $mode2=$cheched; }
+			elseif($this->cform->content_detail_display_ary['check_result']==3) { $mode3=$cheched; }
+			else { $mode1=""; }
+			$disabled = '';
+			if( $state ) { $disabled = 'disabled'; }
+			?>
+			<input type="radio" name="check_result" value="<?php echo CONTENTS_CHECK_RESULT_OK ?>" <?php echo $mode1, $disabled ?>><?php echo $this->cform->content_detail_ck_stats['1'] ?>
+			<input type="radio" name="check_result" value="<?php echo CONTENTS_CHECK_RESULT_NG ?>" <?php echo $mode2, $disabled ?>><?php echo $this->cform->content_detail_ck_stats['2'] ?>
+			<input type="radio" name="check_result" value="<?php echo CONTENTS_CHECK_RESULT_PENDING ?>" <?php echo $mode3, $disabled ?>><?php echo $this->cform->content_detail_ck_stats['3'] ?>
+		</p>
+		<p><span>　監視コメント　：　</span>
+			<input type="text" name="content_detail_ck_comment" value="<?php echo $this->cform->content_detail_ck_comment ?>" <?php echo $disabled ?>>
+		</p>
+		<?php if(empty( $state )) :?>
+		<p id="search_error_msg"><?php echo $this->search_msg ?></p>
+		<input type="button" value="更新" onClick="javascript:update();" />
+		<a class="reset_btm" href="<?php echo sprintf($this->const->_APP_CONTENTS_DETAIL_PATH, $this->cid) ?>" >リセット</a>
+		<?php endif; ?>
+
+		<input type="hidden" name="cid" value="<?php echo $this->cform->content_detail_list[0]['contents_id'] ?>">
+		<input type="hidden" name="ctype" value="<?php echo $this->cform->content_detail_list[0]['contents_type'] ?>">
+		<input type="hidden" name="parent_id" value="<?php echo $this->cform->content_detail_list[0]['contents_parent_id'] ?>">
+ 	</form>
+ 	
+ 	<form id="unlockform" action="<?php echo $this->const->_APP_CONTENTS_UNLOCK_PATH ?>" method="POST">
+ 		<input type="hidden" name="id" value="<?php echo $this->cform->content_detail_list[0]['contents_id'] ?>">
+ 	</form>
+ 	
+ 	<form id="report" action="<?php echo $this->const->_APP_CONTENTS_SEND_REPORT_PATH ?>" method="POST" ></form>
+
+	<div class="contents_detail">
+	
+	<p class=page_link>
+		<?php
+		if(!empty($this->cform->content_detail_prev_page)) echo '<a class="page_s" href="'.sprintf($this->const->_APP_CONTENTS_DETAIL_PATH, $this->cform->content_detail_prev_page).'">前へ</a>';
+		else echo("<span class='page_s'>前へ</span>");
+		if(!empty($this->cform->content_detail_next_page)) echo '<a class="page_e" href="'.sprintf($this->const->_APP_CONTENTS_DETAIL_PATH, $this->cform->content_detail_next_page).'">次へ</a>';
+		else echo ("<span class='page_e'>次へ</span>");
+		?>
+	</p>
+
+	<?php
+		// コンテンツデータのループ
+		$aryMv = array();
+		$aryIm = array();
+		$aryCm = array();
+		$tabMv_flag = false;
+		$tabIm_flag = false;
+		$tabCm_flag = false;
+		foreach( (array)$this->cform->content_detail_list as $item):
+			//コンテンツ種別を振り分け
+			if(isset($item["contents_type"])) {
+				if( 1==$item["contents_type"] ) {
+					$aryMv[] = $item;
+					$tabMv_flag = true;
+				} elseif( 2==$item["contents_type"] ) {
+					$aryIm[] = $item;
+					$tabIm_flag = true;
+				} elseif( 3==$item["contents_type"] ) {
+					$aryCm[] = $item;
+					$tabCm_flag = true;
+				} else {}
+			}
+		endforeach;
+	?>	
+
+		<p class="tabmenu">
+		<?php if($tabCm_flag): ?>
+			<a href="#tab1" class="tab1" onclick="ChangeTab('tab1'); return false;">コメント</a>
+		<?php endif; ?>
+		<?php if($tabIm_flag): ?>
+			<a href="#tab2" class="tab2" onclick="ChangeTab('tab2'); return false;">画像</a>
+		<?php endif; ?>
+		<?php if($tabMv_flag): ?>
+			<a href="#tab3" class="tab3" onclick="ChangeTab('tab3'); return false;">動画</a>
+		<?php endif; ?>
+
+		<br/>
+		
+		<?php if($tabCm_flag): ?>
+		<div id="tab1" class="contents_comment">
+			<p id="alert_msg"><?php echo $this->display_comment_msg ?></p>
+			
+	<?php foreach( $aryCm as $key => $item): ?>
+			<div>
+				<dl>
+					<dt>タイトル：</dt>
+					<dd><?php echo $item['title'] ?></dd>
+				</dl>
+				<dl>
+					<dt>投稿者：</dt>
+					<dd><?php echo $item['user'] ?></dd>
+				</dl>
+				<dl>
+					<dt>コメント：</dt>
+					<dd><?php echo $item['comment'] ?></dd>
+				</dl>
+			</div>
+	<?php endforeach; ?>
+		</div>
+		<?php endif; ?>
+
+		<?php if($tabIm_flag): ?>
+		<div id="tab2" class="contents_igame">
+			<p id="alert_msg"><?php echo $this->display_comment_msg ?></p>
+
+	<?php foreach( $aryIm as $key => $item): ?>
+			<div>
+				<dl>
+					<dt>タイトル：</dt>
+					<dd><?php echo $item['title'] ?></dd>
+				</dl>
+				<dl>
+					<dt>投稿者：</dt>
+					<dd><?php echo $item['user'] ?></dd>
+				</dl>
+				<dl>
+					<dt>コメント：</dt>
+					<dd><?php echo $item['comment'] ?></dd>
+				</dl>
+				<dl>
+					<dt>キャプション：</dt>
+					<dd><?php echo $item['caption'] ?></dd>
+				</dl>
+				<div class="image">
+					<img alt="<?php echo $item['title'] ?>" src="<?php echo $item['url'] ?>">
+				</div>
+			</div>
+			<div class="modal_image"></div>
+	<?php endforeach; ?>
+		</div>
+		<?php endif; ?>
+
+		<?php if( true == $tabMv_flag ): ?>
+		<div id="tab3" class="contents_movie">
+			<p id="alert_msg"><?php echo $this->display_comment_msg ?></p>
+
+	<?php foreach( $aryMv as $key => $item): ?>
+			<div>
+				<dl>
+					<dt>タイトル：</dt>
+					<dd><?php echo $item['title'] ?></dd>
+				</dl>
+				<dl>
+					<dt>投稿者：</dt>
+					<dd><?php echo $item['user'] ?></dd>
+				</dl>
+				<dl>
+					<dt>コメント：</dt>
+					<dd><?php echo $item['comment'] ?></dd>
+				</dl>
+				<dl>
+					<dt>キャプション：</dt>
+					<dd><?php echo $item['caption'] ?></dd>
+				</dl>
+				<div class="movie">
+					<video width="640" height="480" controls >
+						<source src="<?php echo $item['url'] ?>" type="video/<?php echo $item['format'] ?>">
+					</video>
+				</div>
+			</div>
+	<?php endforeach; ?>
+		</div>
+		<?php endif; ?>
+	
+	</div>
+<script type="text/javascript"><!--
+  // デフォルトのタブを選択
+  <?php
+	$tabname = '';
+    if(1==$this->cform->content_detail_display_ary["contents_type"]) $tabname = 'tab3';
+    elseif(2==$this->cform->content_detail_display_ary["contents_type"]) $tabname = 'tab2';
+    elseif(3==$this->cform->content_detail_display_ary["contents_type"]) $tabname = 'tab1';
+  ?>
+  var tabname = '<?php echo $tabname ?>';
+  ChangeTab(tabname);
+// --></script>
+</div>
+
+

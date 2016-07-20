@@ -1,0 +1,164 @@
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_RECOVERY_LIST;
+$this->headTitle($title);
+?>
+
+<?php echo $this->headLink()
+      ->prependStylesheet($this->basePath('css/jquery-ui.css')); ?>
+<?php echo $this->headScript()
+      ->prependFile($this->basePath('js/jquery-1.7.js'))
+      ->prependFile($this->basePath('js/jquery-ui.min.js'))
+      ->prependFile($this->basePath('js/jquery.ui.datepicker-ja.min.js')); ?>
+
+<script>
+	function sendpage(page_no){
+		document.form.p.value = page_no;
+		document.form.action = "<?php echo sprintf($this->const->_APP_RECOVERY_LIST_PATH, $this->rform->current_batch['batch_id']).'&formvalue=pagination' ?>";
+		document.form.submit();
+	}
+</script>
+
+
+<div class="user">
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>取込結果詳細：</h1>
+
+	<p><span>　取込日時　：　</span>
+		<?php
+			echo date("Y/m/d H:i:s",strtotime($this->rform->current_batch['start_date']));
+		?>
+	<span>　対象サービス　：　</span>
+		<?php
+			echo $this->sform->service_list[$this->rform->current_batch['service_id']];
+		?>
+	</p>
+	<p><span>　バッチ番号　：　</span>
+		<?php
+			echo $this->rform->current_batch['batch_id'];
+		?>
+	</p>
+	<p><span>　バッチ実行状態　：　</span>
+		<?php
+			if($this->rform->current_batch['state'] == 1) echo 'リカバリなし';
+			else if($this->rform->current_batch['state'] == 2) echo 'リカバリあり';
+			else echo '不明';
+		?>
+	</p>
+	<p><span>　リカバリステータス　：　</span>
+		<?php
+			if(isset($this->rform->current_batch['recovery_state'])) echo 'データ再取り込み';
+			else echo 'OK';
+		?>
+	</p>
+	
+	<hr style="border-top: 4px double #c0c0c0;width: 100%;height:3;">
+	
+	<form name="form" class="search_form" action="<?php echo sprintf($this->const->_APP_RECOVERY_LIST_PATH, $this->rform->current_batch['batch_id']).'&formvalue=selectItem' ?>" method="POST">
+		<p><span>　実行ステータス　：　</span>
+			<select name="status">
+				<?php 
+				 $i = 0;
+				 foreach($this->rform->status as $key => $item):
+				 	$selected = "";
+				 	if( $key==$this->rform->current_status ) { $selected = "selected"; }
+				 	echo '<option value="'.$key.'" '.$selected.'>'.$item.'</option>';
+				 endforeach;
+				?>
+			</select>
+			<input class="search" type="submit" value=" 検 索　">	
+		</p>
+
+	<input type="hidden" name="hd_status" value="<?php echo $this->rform->current_status ?>">
+	<input type="hidden" name="hd_content_list_display_cnt" value="<?php echo $this->rform->current_list_display_cnt ?>">
+	<input type="hidden" name="p" value="1">
+	
+ 	</form>
+
+</div>
+
+<div class="result_search">
+	<p id="alert_msg"><?php echo $this->display_msg ?></p>
+
+	<h3>検索結果：</h3>
+	<?php
+		if( $this->rform->content_search_result_list_cnt > 0 ):
+			//　検索結果を表示
+	?>
+		<div class="result_cnt">
+			<?php if($this->pagination->intLimitStart() + (int)$this->rform->current_list_display_cnt <= $this->pagination->maxcount()): ?>
+				<p>件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->intLimitStart() + (int)$this->rform->current_list_display_cnt)?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php else: ?>
+				<p>件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->maxcount())?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php endif; ?>
+		</div>
+		<div class="result_area">
+			<!-- <p class="pager"> <?php echo ページャ?></p> -->
+			<?php $this->pagination->Create() ?><!-- 宇多賀修正 pagerクラスが2つ生成されるため消しました。 -->
+			
+			<table class="tbl_contents">
+				<tr>
+				<th class="col1">NO</th>
+				<th class="col2">種別</th>
+				<th class="col3">コンテンツNo</th>
+				<th class="col4">タイトル</th>
+				<th class="col5">ステータス</th>
+				<th class="col6"></th>
+				</tr>
+			<?php
+				// 検索結果のコンテンツデータのループ
+			//$aryData = array_slice((array)$this->cform->content_search_result_list, $this->pagination->intLimitStart(), $this->pagination->intLimitCount());
+			$aryData = array_slice((array)$this->rform->content_search_result_list, $this->pagination->intLimitStart(), $this->rform->current_list_display_cnt);
+			foreach( $aryData as $item):
+				echo '<tr>';
+				//No
+				if(isset($item["ROW_NUM"])) echo '<td class="no">'.$item["ROW_NUM"].'</td>';
+				//種別
+				echo '<td class="contents_type">'.'種別'.'</td>';
+				//コンテンツNo
+				if(isset($item["contents_id"])) echo '<td class="contents_id">'.$item["contents_id"].'</td>';			
+				//タイトル
+				if(isset($item["title"])) echo '<td class="title">'.$item["title"].'</td>';
+				//ステータス
+				if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="recovery_state">リカバリ</td>';
+				else if($item["recovery_state"] == 54) echo '<td class="recovery_state">リカバリ済み</td>';
+				else echo '<td class="recovery_state">正常</td>';
+				//URL
+				if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $item["batch_id"], $item["contents_id"]).'">詳細</td>';
+				echo '</tr>';
+
+			endforeach;
+			?>
+			</table>
+		</div>
+	<?php else: ?>
+		<div class="result_cnt">
+			<p>コンテンツ件数:　0件 </p>
+		</div>
+	<?php endif; ?>
+
+</div>
+
+<div class="jumbotron">
+    <h1><?php echo sprintf($this->translate('Welcome to %sZend Framework 2%s'), '<span class="zf-green">', '</span>') ?></h1>
+    <p><?php echo sprintf($this->translate('Congratulations! You have successfully installed the %sZF2 Skeleton Application%s. You are currently running Zend Framework version %s. This skeleton can serve as a simple starting point for you to begin building your application on ZF2.'), '<a href="https://github.com/zendframework/ZendSkeletonApplication" target="_blank">', '</a>', \Zend\Version\Version::VERSION) ?></p>
+    <p><a class="btn btn-success btn-lg" href="https://github.com/zendframework/zf2" target="_blank"><?php echo $this->translate('Fork Zend Framework 2 on GitHub') ?> &raquo;</a></p>
+</div>
+<!--
+<div class="row">
+
+ <p>これはリストです。</p>
+</div>
+-->

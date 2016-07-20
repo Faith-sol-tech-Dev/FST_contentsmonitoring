@@ -1,0 +1,208 @@
+<?php
+//ページタイトル設定
+$title = $this->const->_STR_PAGE_RECOVERY_RESULT;
+$this->headTitle($title);
+?>
+
+<?php echo $this->headLink()
+      ->prependStylesheet($this->basePath('css/jquery-ui.css')); ?>
+<?php echo $this->headScript()
+      ->prependFile($this->basePath('js/jquery-1.7.js'))
+      ->prependFile($this->basePath('js/jquery-ui.min.js'))
+      ->prependFile($this->basePath('js/jquery.ui.datepicker-ja.min.js')); ?>
+
+<script>
+      $(function() {
+        $("#datepicker").datepicker();
+      });
+      $(function() {
+        $("#datepicker_imp_s").datepicker();
+        $("#datepicker_imp_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_imp_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_imp_s").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_imp_e").datepicker();
+        $("#datepicker_imp_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_imp_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_imp_e").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_chk_s").datepicker();
+        $("#datepicker_chk_s").datepicker("option", "showOn", 'both');
+        $("#datepicker_chk_s").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_chk_s").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+      $(function() {
+        $("#datepicker_chk_e").datepicker();
+        $("#datepicker_chk_e").datepicker("option", "showOn", 'both');
+        $("#datepicker_chk_e").datepicker("option", "buttonImageOnly", true);
+        $("#datepicker_chk_e").datepicker("option", "buttonImage", '/<?php echo (!empty($this->v)) ? $this->v.'/' : '' ?>img/ico_calendar.png');
+      });
+</script>
+
+<script>
+	function sendpage(page_no){
+		document.form.p.value = page_no;
+		document.form.action = "<?php echo $this->const->_APP_RECOVERY_RESULT_PATH ?>?formvalue=pagination"
+		document.form.submit();
+	}
+</script>
+
+
+<div class="user">
+	<?php
+	echo '<p class="service" ></p>';
+	?>
+	<?php 
+	// ログイン済みのユーザ情報を表示
+	$user_name =$this->userData['user_name'];
+	$user_auth =$this->userData['user_auth'];
+	$authority =($user_auth == 1) ? $this->const->_STR_USER_NORMAL : $this->const->_STR_USER_ADMIN;
+	echo '<p class="profile" > ログインユーザ　：　'.$user_name.' ('.$authority.') ';
+	?>
+	<a id="btn logout" href="<?php echo $this->const->_APP_LOGOUT_PATH ?>" ><?php echo $this->const->_STR_LOGOUT ?></a>
+	<?php echo '</p>' ?>
+</div>
+
+<div class="row">
+
+	<h1>取込結果検索：</h1>
+ 
+	<form name="form" class="search_form" action="<?php echo $this->const->_APP_RECOVERY_RESULT_PATH ?>?formvalue=selectItem" method="POST">
+		<p><span>　取込タイプ　：　</span>
+			<?php
+			$cheched = 'checked="checked"';
+			list($mode1, $mode2, $mode3) = array("","",""); 
+			if($this->rform->current_import_type1==1) { $mode1=$cheched; }
+			if($this->rform->current_import_type2==2) { $mode2=$cheched; }
+			if($this->rform->current_import_type3==3) { $mode3=$cheched; }
+			//else { $mode1=$cheched; }
+			?>
+			<input type="checkbox" name="content_import_type1" value=1 <?php echo $mode1 ?>><?php echo $this->rform->content_import_type['1'] ?>
+			<input type="checkbox" name="content_import_type2" value=2 <?php echo $mode2 ?>><?php echo $this->rform->content_import_type['2'] ?>
+			<input type="checkbox" name="content_import_type3" value=3 <?php echo $mode3 ?>><?php echo $this->rform->content_import_type['3'] ?>
+		</p>
+		<p><span>　コンテンツ状態　：　</span>
+			<select name="content_state">
+				<?php 
+	 				$i = 0;
+					foreach($this->rform->status as $key => $item):
+					    $selected = "";
+	    				if( $key==$this->rform->current_state ) { $selected = "selected"; }
+	 					echo '<option value="'.$key.'" '.$selected.'>'.$item.'</option>';
+					endforeach;
+				?>
+			</select>
+		</p>
+		<p><span>　取込期間　：　</span>
+			<input type="text" id="datepicker_imp_s" name="content_import_s" value="<?php echo $this->rform->current_impDate_str ?>">
+			～
+			<input type="text" id="datepicker_imp_e" name="content_import_e" value="<?php echo $this->rform->current_impDate_end ?>">
+		</p>
+		<p><span>　対象サービス　：　</span>
+			<select name="service_list">
+				<?php 
+				 $i = 0;
+				 foreach($this->sform->service_list as $id => $item):
+				 	$i++;
+				 	$selected = "";
+				 	if( $id==$this->rform->current_list_service ) { $selected = "selected"; }
+				 	echo '<option value="'.$id.'" '.$selected.'>'.$item.'</option>';
+				 endforeach;
+				?>
+			</select>
+		</p>
+		<p id="search_error_msg"><?php echo $this->search_msg ?></p>
+		<input class="search" type="submit" value=" 検 索　">
+		<a class="reset_btm" href="<?php echo $this->const->_APP_RECOVERY_SEARCH_PATH ?>" >リセット</a>
+
+	<input type="hidden" name="hd_content_import_type1" value="<?php echo $this->rform->current_import_type1 ?>">
+	<input type="hidden" name="hd_content_import_type2" value="<?php echo $this->rform->current_import_type2 ?>">
+	<input type="hidden" name="hd_content_import_type3" value="<?php echo $this->rform->current_import_type3 ?>">
+	<input type="hidden" name="hd_content_state" value="<?php echo $this->rform->current_state ?>">
+	<input type="hidden" name="hd_content_impDate_str" value="<?php echo $this->rform->current_impDate_str ?>">
+	<input type="hidden" name="hd_content_impDate_end" value="<?php echo $this->rform->current_impDate_end ?>">
+	<input type="hidden" name="hd_service_list" value="<?php echo $this->rform->current_list_service ?>">
+	<input type="hidden" name="p" value="1">
+	
+ 	</form>
+
+</div>
+
+<div class="result_search">
+	<p id="alert_msg"><?php echo $this->display_msg ?></p>
+
+	<h3>検索結果：</h3>
+	<?php
+		if( $this->rform->content_search_result_list_cnt > 0 ):
+			//　検索結果を表示
+	?>
+		<div class="result_cnt">
+			<?php if($this->pagination->intLimitStart() + (int)$this->rform->current_list_display_cnt <= $this->pagination->maxcount()): ?>
+				<p>件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->intLimitStart() + (int)$this->rform->current_list_display_cnt)?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php else: ?>
+				<p>件数: <?php echo ($this->pagination->intLimitStart() + 1) ?> ～　<?php echo ($this->pagination->maxcount())?> ( 総件数／<?php echo $this->pagination->maxcount() ?>件 ) </p>
+			<?php endif; ?>
+		</div>
+		<div class="result_area">
+			<!-- <p class="pager"> <?php echo ページャ?></p> -->
+			<p class="pager"> <?php $this->pagination->Create() ?> </p>
+			
+			<table class="tbl_contents">
+				<tr>
+				<th class="col1">NO</th>
+				<th class="col2">サービス名</th>
+				<!-- <th class="col3"> </th> -->
+				<th class="col4">取込タイプ</th>
+				<th class="col5">取込日</th>
+				<th class="col6">バッチNo</th>
+				<th class="col7">取込件数</th>
+				<th class="col8">ステータス</th>
+				<th class="col9"> </th>
+				</tr>
+			<?php
+				// 検索結果のコンテンツデータのループ
+			//$aryData = array_slice((array)$this->cform->content_search_result_list, $this->pagination->intLimitStart(), $this->pagination->intLimitCount());
+			$aryData = array_slice((array)$this->rform->content_search_result_list, $this->pagination->intLimitStart(), $this->rform->current_list_display_cnt);
+			foreach( $aryData as $item):
+				echo '<tr>';
+				//No
+				echo '<td class="no">'.$item["ROW_NUM"].'</td>';
+				//サービス名
+				if(isset($item["service_name"])) echo '<td class="svc_name">'.$item["service_name"].'</td>';
+				////画像or動画orコメント
+				////echo '<td class="type">画像？動画？コメント？</td>';				
+				//取込タイプ
+				//$contents_type = $this->cform->content_list_type[$item["contents_type"]];
+				if(isset($item["import_type"])) {
+					$import_type = $item["import_type"];
+					echo '<td class="type">'.$this->rform->content_import_type[$import_type].'</td>';
+				}
+				//取込日
+				if(isset($item["insert_date"])) echo '<td class="insert_date">'.$item["insert_date"].'</td>';
+				//バッチNo
+				if(isset($item["batch_id"])) echo '<td class="batch_id">'.$item["batch_id"].'</td>';
+				//取込件数
+				if(isset($item["sumcnt"])) echo '<td class="sumcnt">'.$item["sumcnt"].'</td>';
+				//ステータス
+				if(isset($item["recovery_state"])) echo '<td class="recovery_state">'.$this->rform->recovery_state[$item["recovery_state"]].'</td>';
+				else echo '<td class="recovery_state">'.$this->rform->recovery_state[0].'</td>';
+				//URL
+				if(isset($item["batch_log_id"])) echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_LIST_PATH, $item["batch_log_id"]).'">&gt;&gt;</td>';
+				echo '</tr>';
+
+			endforeach;
+			?>
+			</table>
+		</div>
+	<?php else: ?>
+		<div class="result_cnt">
+			<p>コンテンツ件数:　0件 </p>
+		</div>
+	<?php endif; ?>
+
+</div>
+
+<div class="jumbotron">
+</div>

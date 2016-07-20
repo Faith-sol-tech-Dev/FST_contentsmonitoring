@@ -1,0 +1,39 @@
+<br>
+<br>
+<br>
+<div class="login_form">
+
+<?php
+
+
+$title = 'ログイン';
+$this->headTitle($title);
+
+$form = $this->form;
+echo $this->form()->openTag($form);
+echo '<p>';
+echo $this->formRow($form->get('id'));
+echo '</p>';
+echo '<p>';
+echo $this->formRow($form->get('password'));
+echo '</p>';
+echo '<p>';
+echo $this->formHidden($form->get('csrf'));
+echo $this->formSubmit($form->get('submit'));
+echo '</p>';
+
+echo $this->form()->closeTag($form);
+
+?>
+
+<div class="error" >
+<?php if(!empty($_GET['er'])) : ?>
+<p id="1" ><?php echo $this->error[$_GET['er']] ?></p>
+<?php endif; ?>
+</div>
+
+</div>
+
+<div class="row">
+
+</div>
