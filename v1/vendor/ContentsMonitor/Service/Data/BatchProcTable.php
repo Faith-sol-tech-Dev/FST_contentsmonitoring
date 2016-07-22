@@ -48,16 +48,6 @@ class BatchProcTable extends AbstractLocalAdapter implements AdapterAwareInterfa
     	
     	try {
 	    	$batch_id = (int) $batch_id;
-
-	    	//存在チェック
-	    	$aryData = $this->getWkBatchProc($batch_id);
-	    	if(empty($aryData)) {
-	    			$item = new BatchProcData();
-	    			$item->batch_id = $batch_id;
-	    			$item->state = 0;
-	    			$this->saveWkBatchProc($item);
-	    	}
-	    	
 	        $sql = 'SELECT * FROM ' . $this->tableGateway->table . ' WHERE batch_id = :batch_id FOR UPDATE';
 	        $params = array(
 	            'batch_id' => $batch_id,
@@ -113,7 +103,7 @@ class BatchProcTable extends AbstractLocalAdapter implements AdapterAwareInterfa
 	        $rowset = $this->tableGateway->select(array('batch_id' => $batch_id));
 	        $row = $rowset->current();
 	        if (!$row) {
-	            //throw new \DbAccessException("Could not find row $batch_id");
+	            throw new \DbAccessException("Could not find row $batch_id");
 	        }
     	}
     	catch( \ErrorException $ee ) {
@@ -159,10 +149,14 @@ class BatchProcTable extends AbstractLocalAdapter implements AdapterAwareInterfa
     		Log::query(sprintf('SQL::saveWkBatchProc() param:state=%s',$data['state']));
     		Log::query(sprintf('SQL::saveWkBatchProc() param:batch_id=%s',$batch_id));
     		
-	        if ($batch_id == 0 || !$this->getWkBatchProc($batch_id)) {
+	        if ($batch_id == 0) {
 	            $this->tableGateway->insert($data);
 	        } else {
-                $this->tableGateway->update($data, array('batch_id' => $batch_id));
+	            if ($this->getWkBatchProc($batch_id)) {
+	                $this->tableGateway->update($data, array('batch_id' => $batch_id));
+	            } else {
+	                throw new \DbAccessException('WkBatchProc batch_id does not exist');
+	            }
 	        }
     	}
     	catch( \ErrorException $ee ) {

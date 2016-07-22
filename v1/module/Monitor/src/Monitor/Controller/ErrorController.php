@@ -1,6 +1,8 @@
 <?php
 namespace Monitor\Controller;
 
+use Zend\View\Model\ViewModel;
+
 /**
  * エラー画面専用コントローラ
  *

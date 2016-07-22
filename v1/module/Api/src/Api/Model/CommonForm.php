@@ -11,6 +11,9 @@ use Zend\Mail;
 use Zend\Json\Json;
 
 use ContentsMonitor\Common\LogClass as Log;
+use ContentsMonitor\Common\UtilityClass as Utility;
+use ContentsMonitor\Common\ValidationClass as Validation;
+use ContentsMonitor\Common\RequestClass as RequestClass;
 use ContentsMonitor\Exception\DbAccessException as DbAccessException;
 
 use ContentsMonitor\Service\Entity\BatchLogData as BatchLogData;
@@ -202,7 +205,7 @@ class CommonForm
 	 */
 	public function __construct($service_locator)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::__construct() Start.');
+		$start_time=microtime(true);
 		
 		// 引数チェック
 		if (is_null($service_locator)) {
@@ -229,11 +232,13 @@ class CommonForm
 			$this->configApiMail = $this->configApi['mail'];
 			$this->conn = $this->adapter->getDriver()->getConnection();
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR __construct() --  failed CommonForm construct.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Dedub::__construct() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   __construct() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -246,7 +251,7 @@ class CommonForm
 	 */
 	protected function sendMail($configApiMail, $subject, $body)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::sendMail() Start.');
+		$start_time=microtime(true);
 		
 		// 引数チェック
 		if (is_null($configApiMail)) {
@@ -273,10 +278,12 @@ class CommonForm
 				$transport->send($mail);
 			}
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR sendMail() --  failed sendMail.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
 		}
-		Log::batch(__FILE__, __LINE__, 'Dedub::sendMail() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   sendMail() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -284,16 +291,24 @@ class CommonForm
 	 *
 	 * @param int $trigger_type トリガー種別（1:PUSH／2:PULL）
 	 */
-	protected function validateTriggerType($trigger_type)
+	protected function validateTriggerType($trigger_type, $data)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::validateTriggerType() Start.');
+     	$start_time=microtime(true);
 		
 		$triggerTypeArray = array(WK_BATCH_TRIGGER_TYPE_PUSH, WK_BATCH_TRIGGER_TYPE_PULL);
 		if (!in_array($trigger_type, $triggerTypeArray)) {
 			// error
-			throw new \Exception($trigger_type, Response::STATUS_CODE_400);
+			throw new \Exception('トリガー種別 '.$trigger_type, Response::STATUS_CODE_400);
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::validateTriggerType() End.');
+		//if(dataのチェック)Validation::validateForm(array($data))
+		$param = array('api_param'=>$data);
+		$msg = Validation::validateForm($param, "api_param", "パラメータ", false, 0, null, null);
+		if($msg != ''){
+			Log::batch(__FILE__, __LINE__, $msg);
+			throw new \Exception(' api_param '.$data, Response::STATUS_CODE_400);
+		}
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+     	Log::batch(__FILE__, __LINE__, 'INFO   validateTriggerType() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -304,7 +319,7 @@ class CommonForm
 	 */
 	protected function creatBatchLogData($import_type, $trigger_type)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::creatBatchLogData() Start.');
+		$start_time=microtime(true);
 		
 		// 引数チェック
 		if (is_null($trigger_type)) {
@@ -358,17 +373,25 @@ class CommonForm
 			// DBに保存
 			$this->batchLogTable->saveWkBatchLog($this->batchLogData);
 			$this->batchLogData->batch_log_id = $this->batchLogTable->getLastInsertValue();
+			if(!isset($this->batchLogData->batch_log_id)){
+				Log::batch(__FILE__, __LINE__, 'ERROR creatBatchLogData() --  WK_BATCH_LOG　Table　登録に失敗しました');
+				Log::batch(__FILE__, __LINE__, 'ERROR creatBatchLogData() --  batch_log_id = '.$this->batchLogData->batch_log_id);
+				throw new \Exception('batch_log_id '.$this->batchLogData->batch_log_id, Response::STATUS_CODE_500);
+			}
 		} catch (\DbAccessException $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR creatBatchLogData() --  failed set WK_BATCH_LOG  Table.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw new Exception($e->getMessage());
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR creatBatchLogData() --  failed set WK_BATCH_LOG  Table.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   creatBatchLogData() --  has completed. ('.$diff_time.')');
 		}
 		
 		Log::batch(__FILE__, __LINE__, 'WK_BATCH_LOG.batch_log_id = ' . $this->batchLogData->batch_log_id);
-		
-		Log::batch(__FILE__, __LINE__, 'Dedub::creatBatchLogData() End.');
 	}
 	
 	/**
@@ -378,11 +401,16 @@ class CommonForm
 	 */
 	protected function setBatchLogEndDate($end_date = false)
 	{
+		$start_time=microtime(true);
+		
 		if ($end_date === false) {
 			$end_date = strftime('%Y-%m-%d %H:%M:%S', time());
 		}
 		// 終了日時
 		$this->batchLogData->end_date = $end_date;
+		
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+		Log::batch(__FILE__, __LINE__, 'INFO   setBatchLogEndDate() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -393,7 +421,7 @@ class CommonForm
 	 */
 	protected function updateBatchLogDataState($state, $flag = false)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchLogDataState() Start.');
+		$start_time=microtime(true);
 		
 		// 引数チェック
 		if (is_null($state)) {
@@ -413,14 +441,17 @@ class CommonForm
 			$this->batchLogData->state = $state;
 			$this->batchLogTable->saveWkBatchLog($this->batchLogData);
 		} catch (\DbAccessException $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR updateBatchLogDataState() --  failed set WK_BATCH_LOG  Table.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw new Exception($e->getMessage());
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR updateBatchLogDataState() --  failed set WK_BATCH_LOG  Table.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchLogDataState() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   updateBatchLogDataState() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -430,7 +461,7 @@ class CommonForm
 	 */
 	protected function updateBatchLogDataRecoveryState($recovery_state)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchLogDataRecoveryState() Start.');
+		$start_time=microtime(true);
 		
 		// 引数チェック
 		if (is_null($recovery_state)) {
@@ -448,14 +479,17 @@ class CommonForm
 			$this->batchLogData->recovery_state = $recovery_state;
 			$this->batchLogTable->saveWkBatchLog($this->batchLogData);
 		} catch (\DbAccessException $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR updateBatchLogDataRecoveryState() --  failed set WK_BATCH_LOG  Table.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw new Exception($e->getMessage());
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR updateBatchLogDataRecoveryState() --  failed set WK_BATCH_LOG  Table.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchLogDataRecoveryState() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   updateBatchLogDataRecoveryState() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -467,7 +501,7 @@ class CommonForm
 	 */
 	protected function updateBatchLogContentDetailDataRecoveryState($batch_contents_ids, $recovery_state)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchLogContentDetailDataRecoveryState() Start.');
+		$start_time=microtime(true);
 		
 		// 引数チェック
 		if (is_null($recovery_state)) {
@@ -489,15 +523,18 @@ class CommonForm
 				
 				$this->batchLogContentDetailTable->saveWkBatchLogContentDetail($wkBatchLogContentDetail);
 			} catch (DbAccessException $e) {
+				Log::batch(__FILE__, __LINE__, 'ERROR updateBatchLogContentDetailDataRecoveryState() --  failed set WK_BATCH_LOG_CONTENTS_DETAIL  Table.');
 				Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 				$error = true;
 			} catch (\Exception $e) {
+				Log::batch(__FILE__, __LINE__, 'ERROR updateBatchLogContentDetailDataRecoveryState() --  failed set WK_BATCH_LOG_CONTENTS_DETAIL  Table.');
 				Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 				$error = true;
 			}
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchLogContentDetailDataRecoveryState() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   updateBatchLogContentDetailDataRecoveryState() --  has completed. ('.$diff_time.')');
 		
 		return $error;
 	}
@@ -509,7 +546,7 @@ class CommonForm
 	 */
 	protected function updateBatchProc($state)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchProc() Start.');
+		$start_time=microtime(true);
 		
 		Log::batch(__FILE__, __LINE__, 'state = ' . $state);
 		
@@ -538,15 +575,18 @@ class CommonForm
 			$this->conn->commit();
 			$this->isBatchProcStatusRun = true;
 		} catch (\DbAccessException $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR updateBatchProc() --  failed update WK_BATCH_PROC  Table.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			throw new Exception($e->getMessage());
 		} catch (\Exception $e) {
 			$this->conn->rollback();
+			Log::batch(__FILE__, __LINE__, 'ERROR updateBatchProc() --  failed update WK_BATCH_PROC  Table.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			throw $e;
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   updateBatchProc() --  has completed. ('.$diff_time.')');
 		}
-		
-		Log::batch(__FILE__, __LINE__, 'Dedub::updateBatchProc() End.');
 	}
 	
 	/**
@@ -554,9 +594,9 @@ class CommonForm
 	 *
 	 * @param int $batch_id バッチID
 	 */
-	protected function getBatch($batch_id)
+	protected function getBatch($batch_id, $data)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::getBatch() Start.');
+		$start_time=microtime(true);
 		
 		switch ($this->batchLogData->import_type) {
 			case WK_BATCH_IMPORT_TYPE_API:
@@ -633,11 +673,11 @@ class CommonForm
 		$this->apiErrorArray = $mstApiErrorArray;
 		switch ($this->batchLogData->import_type) {
 			case WK_BATCH_IMPORT_TYPE_API:
-				$this->batchLogData->url = $this->serviceData->api_url . '?' . $this->serviceData->api_param;
+				$this->batchLogData->url = $this->serviceData->api_url . '?sys_key=' .$this->serviceData->api_key.'&'. vsprintf($this->serviceData->api_param, explode('|', $data));
 				//$this->batchLogData->url = 'https://noue.cm.ip128.ip140.faith-sol-tech.local/test_json2.php';
 				break;
 			case WK_BATCH_IMPORT_TYPE_CSV:
-				$this->batchLogData->url = $this->serviceData->csv_url . '?' . $this->serviceData->csv_param;
+				$this->batchLogData->url = $this->serviceData->csv_url . '?sys_key=' .$this->serviceData->api_key.'&'. vsprintf($this->serviceData->csv_param, explode('|', $data));
 				break;
 			case WK_BATCH_IMPORT_TYPE_CRAWLER:
 				break;
@@ -647,7 +687,8 @@ class CommonForm
 		$this->updateBatchLogDataState($get_connection_data);
 		Log::batch(__FILE__, __LINE__, 'updateBatchLogDataState = ' . $get_connection_data);
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::getBatch() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   getBatch() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -656,7 +697,7 @@ class CommonForm
 	 */
 	protected function execApi()
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::execApi() Start.');
+		$start_time=microtime(true);
 		
 		switch ($this->batchLogData->import_type) {
 			case WK_BATCH_IMPORT_TYPE_API:
@@ -690,7 +731,7 @@ class CommonForm
 					CURLOPT_MAXREDIRS => $this->configApi['max_redirects'],
 					CURLOPT_TIMEOUT => $this->configApi['timeout'],
 					CURLOPT_USERAGENT => $this->configApi['user_agent'],
-					CURLOPT_SSL_VERIFYPEER => true, // 本番環境ではtrue推奨
+					CURLOPT_SSL_VERIFYPEER => false, // 本番環境ではtrue推奨
 				)
 			)
 		);
@@ -722,8 +763,8 @@ class CommonForm
 				$this->updateBatchLogDataState($start_connection);
 				Log::batch(__FILE__, __LINE__, 'updateBatchLogDataState = ' . $start_connection);
 			} catch (\Exception $e) {
-				Log::batch(__FILE__, __LINE__, '');
-				Log::batch(__FILE__, __LINE__, 'api error.');
+				Log::batch(__FILE__, __LINE__, 'ERROR execApi() --  api error.');
+				Log::batch(__FILE__, __LINE__, $e->getMessage());
 				continue;
 			}
 			
@@ -742,7 +783,8 @@ class CommonForm
 						continue;
 					}
 				} catch (\Exception $e) {
-					Log::batch(__FILE__, __LINE__, '');
+					Log::batch(__FILE__, __LINE__, 'ERROR execApi() --  file_put_contents error.');
+					Log::batch(__FILE__, __LINE__, $e->getMessage());
 					continue;
 				}
 			}
@@ -774,13 +816,14 @@ class CommonForm
 						continue;
 					}
 				} catch (\Exception $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR execApi() --  API DECODE ERROR.');
 					Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 					continue;
 				}
 				
 				if (!isset($responseApi['ResultCode'])) {
 					// error
-					Log::batch(__FILE__, __LINE__, '');
+					Log::batch(__FILE__, __LINE__, 'ResultCode = NULL');
 					continue;
 				}
 				
@@ -788,12 +831,54 @@ class CommonForm
 				foreach ($this->apiErrorArray as $v) {
 					if ($v['error_code'] == $responseApi['ResultCode']) {
 						// error
-						Log::batch(__FILE__, __LINE__, '');
+						Log::batch(__FILE__, __LINE__, 'エラーレスポンスが返却されました');
 						Log::batch(__FILE__, __LINE__, 'ResultCode = ' . $responseApi['ResultCode']);
 						$error = true;
 						break;
 					}
 				}
+				//if(件数チェック)
+				if(isset($responseApi['TotalCount'])){
+					if($responseApi['TotalCount'] != 0){
+						//件数1件以上
+						//itemsのチェック
+						$items = RequestClass::arrayValue($responseApi, 'Items', array(), true);
+						if ($this->serviceData->api_type == API_TYPE_XML) {
+							// XMLの場合、値によっては配列、又は、スカラで帰ってくるため配列に統一
+							$items = RequestClass::arrayValue($items, 'Item', array(), true);
+						}
+						//itemsのカウント
+						$count = 0;
+						foreach ($items as $item){
+							$count++;
+							foreach ($item as $ite){
+								if(is_array($ite)){
+									foreach ($ite as $it){
+										$count++;
+									}
+								}
+							}
+						}
+						if($responseApi['TotalCount'] == $count){
+							//正常
+							Log::batch(__FILE__, __LINE__, 'TotalCount = ' . $responseApi['TotalCount']);
+							Log::batch(__FILE__, __LINE__, 'ItemsCount = ' . $count);
+						}else{
+							//エラー
+							Log::batch(__FILE__, __LINE__, '取得件数に誤りがあります');
+							Log::batch(__FILE__, __LINE__, 'TotalCount = ' . $responseApi['TotalCount']);
+							Log::batch(__FILE__, __LINE__, 'ItemsCount = ' . $count);
+						}
+					}else{
+						//件数0件
+						$error = true;
+						Log::batch(__FILE__, __LINE__, '件数が0件のためエラーとして処理しました');
+					}
+				}else{
+					$error = true;
+					Log::batch(__FILE__, __LINE__, '件数がないためエラーとして処理しました');
+				}
+				
 				if (!$error) {
 					break;
 				}
@@ -810,6 +895,7 @@ class CommonForm
 						continue;
 					}
 					$responseApi = mb_convert_encoding($file, 'UTF-8', $from_encode);
+					var_dump($responseApi);
 				}
 				break;
 			} else {
@@ -833,7 +919,8 @@ class CommonForm
 		$this->updateBatchLogDataState($connection);
 		Log::batch(__FILE__, __LINE__, 'updateBatchLogDataState = ' . $connection);
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::execApi() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   execApi() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -843,7 +930,7 @@ class CommonForm
 	 */
 	protected function insertBatchLogContent()
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::insertBatchLogContent() Start.');
+		$start_time=microtime(true);
 		
 		$wkBatchLogContent = new BatchLogContentData();
 		
@@ -854,7 +941,8 @@ class CommonForm
 		
 		$batch_transaction_id = $this->batchLogContentTable->getLastInsertValue();
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::insertBatchLogContent() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   insertBatchLogContent() --  has completed. ('.$diff_time.')');
 		
 		return $batch_transaction_id;
 	}
@@ -869,7 +957,7 @@ class CommonForm
 	 */
 	protected function insertBatchLogContentDetail($batch_transaction_id, $contents_type, $req)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::insertBatchLogContentDetail() Start.');
+		$start_time=microtime(true);
 		
 		$insert_now = time();
 		$insert_date = strftime('%Y-%m-%d %H:%M:%S', $insert_now);
@@ -916,7 +1004,8 @@ class CommonForm
 		
 		$batch_contents_id = $this->batchLogContentDetailTable->getLastInsertValue();
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::insertBatchLogContentDetail() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   insertBatchLogContentDetail() --  has completed. ('.$diff_time.')');
 		
 		return $batch_contents_id;
 	}
@@ -930,7 +1019,7 @@ class CommonForm
 	 */
 	protected function insertContent($import_type, $contents_type)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::insertContent() Start.');
+		$start_time=microtime(true);
 		
 		$insert_now = time();
 		$insert_date = strftime('%Y-%m-%d %H:%M:%S', $insert_now);
@@ -941,9 +1030,9 @@ class CommonForm
 		// サービスID
 		$trnContents->service_id = $this->serviceData->service_id;
 		// 監視期間の開始日
-		$trnContents->monitoring_start_date = null;
+		$trnContents->monitoring_start_date = $this->serviceData->monitoring_start_date;
 		// 監視期間の終了日
-		$trnContents->monitoring_end_date = null;
+		$trnContents->monitoring_end_date = $this->serviceData->monitoring_end_date;
 		// 取込種別（1:API／2:CSV／3:クローラ）
 		$trnContents->import_type = $import_type;
 		// 取込処理日時（年月）
@@ -955,7 +1044,8 @@ class CommonForm
 		
 		$contents_id = $this->contentsTable->getLastInsertValue();
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::insertContent() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   insertContent() --  has completed. ('.$diff_time.')');
 		
 		return $contents_id;
 	}
@@ -969,7 +1059,7 @@ class CommonForm
 	 */
 	protected function insertContentDetail($contents_id, $contents_type, $req)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::insertContentDetail() Start.');
+		$start_time=microtime(true);
 		
 		$insert_now = time();
 		$insert_date = strftime('%Y-%m-%d %H:%M:%S', $insert_now);
@@ -1024,7 +1114,8 @@ class CommonForm
 		
 		$this->contentsDetailTable->saveTrnContentsDetail($trnContentsDetail);
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::insertContentDetail() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   insertContentDetail() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -1036,7 +1127,7 @@ class CommonForm
 	 */
 	protected function creatBatchLogContent($contents_type, $req)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::creatBatchLogContent() Start.');
+		$start_time=microtime(true);
 		
 		$recovery_state = isset($req['recovery_state']) ? $req['recovery_state'] : null;
 		
@@ -1056,14 +1147,17 @@ class CommonForm
 				}
 			}
 		} catch (DbAccessException $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR creatBatchLogContent() --  failed set WK_BATCH_LOG_CONTENTS_DETAIL  Table.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			throw $e;
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR creatBatchLogContent() --  failed set WK_BATCH_LOG_CONTENTS_DETAIL  Table.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			throw $e;
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Dedub::creatBatchLogContent() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   creatBatchLogContent() --  has completed. ('.$diff_time.')');
 		
 		return $batch_contents_ids;
 	}
@@ -1077,7 +1171,7 @@ class CommonForm
 	 */
 	protected function creatContent($import_type, $contents_type, $req)
 	{
-		Log::batch(__FILE__, __LINE__, 'Dedub::creatContent() Start.');
+		$start_time=microtime(true);
 		
 		try {
 			// バッチログコンテンツ系テーブル登録
@@ -1102,14 +1196,17 @@ class CommonForm
 			$this->conn->commit();
 		} catch (DbAccessException $e) {
 			$this->conn->rollback();
+			Log::batch(__FILE__, __LINE__, 'ERROR creatContent() --  failed set TRN_CONTENTS  Table or TRN_CONTENTS_DETAIL  Table.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			throw $e;
 		} catch (\Exception $e) {
 			$this->conn->rollback();
+			Log::batch(__FILE__, __LINE__, 'ERROR creatContent() --  failed set TRN_CONTENTS  Table or TRN_CONTENTS_DETAIL  Table.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			throw $e;
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Dedub::creatContent() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   creatContent() --  has completed. ('.$diff_time.')');
 	}
 }

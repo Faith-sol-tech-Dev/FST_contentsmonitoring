@@ -754,7 +754,7 @@ class ContentForm extends Form
     	$sumcnt = 0;
 		try {
 			// コンテンツ件数を取得する
-			$sumcnt = $this->contentTable->getContentsNGReportToUserId_count( $request );
+			$sumcnt = $this->contentNGReportTable->getContentsNGReportToUserId_count( $request );
 		}
 		catch( \DbAccessException $de ) {
 			Log::error(__FILE__, __LINE__, $de->getMessage());

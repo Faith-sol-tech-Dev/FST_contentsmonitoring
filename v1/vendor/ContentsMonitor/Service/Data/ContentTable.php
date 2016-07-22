@@ -143,7 +143,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     		if(!empty($param['check_state1']) || !empty($param['check_state3'])) {
     				$sql .= '   AND ( ';
     				if(!empty($param['check_state1'])) { $sql .= 'cd.check_state = :check_state1'; }
-    		    	if(!empty($param['check_state3'])) { $sql .= (($param['check_state1'] == 0) ? ' OR ':'').'cd.check_state = :check_state3'; }
+    		    	if(!empty($param['check_state3'])) { $sql .= (($param['check_state1'] == 1) ? ' OR ':'').'cd.check_state = :check_state3'; }
     				//if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'cd.check_state = :check_state2'; }
     				//if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'cd.check_state = :check_state3'; }
     				$sql .= ' ) ';
@@ -169,7 +169,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
 			$params['service_id'] = (int)$param['service_id'];
     	    if(!empty($param['contents_type']))   { $params['contents_type'] = (int)$param['contents_type']; }
 			if(!empty($param['check_state1']))    { $params['check_state1'] = (int)$param['check_state1']; }
-    	   	if(!empty($param['check_state2']))    { $params['check_state2'] = (int)$param['check_state2']; }
+//    	   	if(!empty($param['check_state2']))    { $params['check_state2'] = (int)$param['check_state2']; }
     		if(!empty($param['check_state3']))    { $params['check_state3'] = (int)$param['check_state3']; }
 			if(!empty($param['check_result1']))   { $params['check_result1'] = (int)$param['check_result1']; }
     		if(!empty($param['check_result2']))   { $params['check_result2'] = (int)$param['check_result2']; }
@@ -183,7 +183,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     	    Log::query(sprintf('SQL::getContentDataCount() param:service_id=%s',$param['service_id']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:contents_type=%s',$param['contents_type']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_state1=%s',$param['check_state1']));
-    	    Log::query(sprintf('SQL::getContentDataCount() param:check_state2=%s',$param['check_state2']));
+//    	    Log::query(sprintf('SQL::getContentDataCount() param:check_state2=%s',$param['check_state2']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_state3=%s',$param['check_state3']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_result1=%s',$param['check_result1']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_result2=%s',$param['check_result2']));
@@ -244,7 +244,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     				.'    ,c.contents_id '
     				.'    ,c.contents_type '
     				.'    ,cd.title '
-    				.'    ,cd.name '
+    				.'    ,cd.user '
     				.'    ,cd.comment '
     				.'    ,cd.create_date '
     				.'    ,cd.url '
@@ -259,7 +259,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     	    if(!empty($param['check_state1']) || !empty($param['check_state3'])) {
     				$sql .= '   AND ( ';
     				if(!empty($param['check_state1'])) { $sql .= 'cd.check_state = :check_state1'; }
-    		    	if(!empty($param['check_state3'])) { $sql .= (($param['check_state1'] == 0) ? ' OR ':'').'cd.check_state = :check_state3'; }
+    		    	if(!empty($param['check_state3'])) { $sql .= (($param['check_state1'] == 1) ? ' OR ':'').'cd.check_state = :check_state3'; }
     				//if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'cd.check_state = :check_state2'; }
     				//if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'cd.check_state = :check_state3'; }
     				$sql .= ' ) ';
@@ -285,7 +285,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
 			$params['service_id'] = (int)$param['service_id'];
 			if(!empty($param['contents_type']))   { $params['contents_type'] = (int)$param['contents_type']; }
 			if(!empty($param['check_state1']))    { $params['check_state1'] = (int)$param['check_state1']; }
-    	   	if(!empty($param['check_state2']))    { $params['check_state2'] = (int)$param['check_state2']; }
+//    	   	if(!empty($param['check_state2']))    { $params['check_state2'] = (int)$param['check_state2']; }
     		if(!empty($param['check_state3']))    { $params['check_state3'] = (int)$param['check_state3']; }
 			if(!empty($param['check_result1']))   { $params['check_result1'] = (int)$param['check_result1']; }
     		if(!empty($param['check_result2']))   { $params['check_result2'] = (int)$param['check_result2']; }
@@ -299,7 +299,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     	    Log::query(sprintf('SQL::getContentDataCount() param:service_id=%s',$param['service_id']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:contents_type=%s',$param['contents_type']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_state1=%s',$param['check_state1']));
-    	    Log::query(sprintf('SQL::getContentDataCount() param:check_state2=%s',$param['check_state2']));
+//    	    Log::query(sprintf('SQL::getContentDataCount() param:check_state2=%s',$param['check_state2']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_state3=%s',$param['check_state3']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_result1=%s',$param['check_result1']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_result2=%s',$param['check_result2']));
@@ -367,7 +367,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
 			if(!empty($param['check_state1']) || !empty($param['check_state3'])) {
     				$sql .= '   AND ( ';
     				if(!empty($param['check_state1'])) { $sql .= 'cd.check_state = :check_state1'; }
-    		    	if(!empty($param['check_state3'])) { $sql .= (($param['check_state1'] == 0) ? ' OR ':'').'cd.check_state = :check_state3'; }
+    		    	if(!empty($param['check_state3'])) { $sql .= (($param['check_state1'] == 1) ? ' OR ':'').'cd.check_state = :check_state3'; }
     				//if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'cd.check_state = :check_state2'; }
     				//if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'cd.check_state = :check_state3'; }
     				$sql .= ' ) ';
@@ -393,7 +393,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
 			$params['service_id'] = (int)$param['service_id'];
 			if(!empty($param['contents_type']))   { $params['contents_type'] = (int)$param['contents_type']; }
 			if(!empty($param['check_state1']))    { $params['check_state1'] = (int)$param['check_state1']; }
-    	   	if(!empty($param['check_state2']))    { $params['check_state2'] = (int)$param['check_state2']; }
+//    	   	if(!empty($param['check_state2']))    { $params['check_state2'] = (int)$param['check_state2']; }
     		if(!empty($param['check_state3']))    { $params['check_state3'] = (int)$param['check_state3']; }
 			if(!empty($param['check_result1']))   { $params['check_result1'] = (int)$param['check_result1']; }
     		if(!empty($param['check_result2']))   { $params['check_result2'] = (int)$param['check_result2']; }
@@ -407,7 +407,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     	    Log::query(sprintf('SQL::getContentDataCount() param:service_id=%s',$param['service_id']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:contents_type=%s',$param['contents_type']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_state1=%s',$param['check_state1']));
-    	    Log::query(sprintf('SQL::getContentDataCount() param:check_state2=%s',$param['check_state2']));
+//    	    Log::query(sprintf('SQL::getContentDataCount() param:check_state2=%s',$param['check_state2']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_state3=%s',$param['check_state3']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_result1=%s',$param['check_result1']));
     	    Log::query(sprintf('SQL::getContentDataCount() param:check_result2=%s',$param['check_result2']));
@@ -674,13 +674,18 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     				.$where
     				.' GROUP BY c.import_date ';
     		
-    		Log::query(sprintf('SQL::getAggregate() query=%s',$sql));
-    		Log::query(sprintf('SQL::getAggregate() param:service_id=%s',$param['service_id']));
-    		Log::query(sprintf('SQL::getAggregate() param:contents_type_1=%s',$params['contents_type_1']));
-    		Log::query(sprintf('SQL::getAggregate() param:contents_type_2=%s',$params['contents_type_2']));
-    		Log::query(sprintf('SQL::getAggregate() param:contents_type_3=%s',$params['contents_type_3']));
-    		Log::query(sprintf('SQL::getAggregate() param:total_date_min=%s',$params['total_date_min']));
-    		Log::query(sprintf('SQL::getAggregate() param:total_date_max=%s',$params['total_date_max']));
+    		if(is_array($param)){
+    			Log::query(sprintf('SQL::getAggregate() query=%s',$sql));
+    			Log::query(sprintf('SQL::getAggregate() param:service_id=%s',$param['service_id']));
+    			Log::query(sprintf('SQL::getAggregate() param:contents_type_1=%s',$params['contents_type_1']));
+    			Log::query(sprintf('SQL::getAggregate() param:contents_type_2=%s',$params['contents_type_2']));
+    			Log::query(sprintf('SQL::getAggregate() param:contents_type_3=%s',$params['contents_type_3']));
+    			Log::query(sprintf('SQL::getAggregate() param:total_date_min=%s',$params['total_date_min']));
+    			Log::query(sprintf('SQL::getAggregate() param:total_date_max=%s',$params['total_date_max']));
+    		} else {
+    			Log::query(sprintf('SQL::getAggregate() query=%s',$sql));
+    			Log::query(sprintf('SQL::getAggregate() param:service_id=%s',$param));
+    		}
 
     		$stmt = $this->adapter->createStatement($sql);
     		$results = $stmt->execute($params);

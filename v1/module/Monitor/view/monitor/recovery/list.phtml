@@ -21,6 +21,9 @@ $this->headTitle($title);
 
 
 <div class="user">
+	<?php
+	echo '<p class="service" ></p>';
+	?>
 	<?php 
 	// ログイン済みのユーザ情報を表示
 	$user_name =$this->userData['user_name'];
@@ -90,6 +93,7 @@ $this->headTitle($title);
 </div>
 
 <div class="result_search">
+	<a id="section_top"></a>
 	<p id="alert_msg"><?php echo $this->display_msg ?></p>
 
 	<h3>検索結果：</h3>
@@ -131,6 +135,7 @@ $this->headTitle($title);
 				if(isset($item["contents_id"])) echo '<td class="contents_id">'.$item["contents_id"].'</td>';			
 				//タイトル
 				if(isset($item["title"])) echo '<td class="title">'.$item["title"].'</td>';
+				else echo '<td class="title"></td>';
 				//ステータス
 				if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="recovery_state">リカバリ</td>';
 				else if($item["recovery_state"] == 54) echo '<td class="recovery_state">リカバリ済み</td>';
@@ -142,6 +147,7 @@ $this->headTitle($title);
 			endforeach;
 			?>
 			</table>
+			<a href="#section_top" >TOPに戻る</a>
 		</div>
 	<?php else: ?>
 		<div class="result_cnt">
@@ -150,15 +156,3 @@ $this->headTitle($title);
 	<?php endif; ?>
 
 </div>
-
-<div class="jumbotron">
-    <h1><?php echo sprintf($this->translate('Welcome to %sZend Framework 2%s'), '<span class="zf-green">', '</span>') ?></h1>
-    <p><?php echo sprintf($this->translate('Congratulations! You have successfully installed the %sZF2 Skeleton Application%s. You are currently running Zend Framework version %s. This skeleton can serve as a simple starting point for you to begin building your application on ZF2.'), '<a href="https://github.com/zendframework/ZendSkeletonApplication" target="_blank">', '</a>', \Zend\Version\Version::VERSION) ?></p>
-    <p><a class="btn btn-success btn-lg" href="https://github.com/zendframework/zf2" target="_blank"><?php echo $this->translate('Fork Zend Framework 2 on GitHub') ?> &raquo;</a></p>
-</div>
-<!--
-<div class="row">
-
- <p>これはリストです。</p>
-</div>
--->

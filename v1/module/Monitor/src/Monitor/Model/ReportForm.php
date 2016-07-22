@@ -7,6 +7,7 @@ use ContentsMonitor\Service\Data\ContentTable as ContentTable;
 use ContentsMonitor\Common\LogClass as Log;
 use ContentsMonitor\Common\PaginationClass as Pagination;
 use ContentsMonitor\Common\ValidationClass as Validation;
+use ContentsMonitor\Common\UtilityClass as Utility;
 
 
 /**

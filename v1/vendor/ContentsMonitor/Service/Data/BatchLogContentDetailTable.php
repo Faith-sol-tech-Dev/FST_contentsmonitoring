@@ -177,9 +177,11 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     	try {
     
     		$sql =   'SELECT COUNT(0) AS sumcnt '
-    				.' FROM WK_BATCH_LOG_CONTENT as wc '
-    				.' INNER JOIN WK_BATCH_LOG_CONTENT_DETAIL as wcd '
+    				.' FROM WK_BATCH_LOG_CONTENTS as wc '
+    				.' INNER JOIN WK_BATCH_LOG_CONTENTS_DETAIL as wcd '
     				.'  ON wc.batch_transaction_id = wcd.batch_transaction_id '
+    				.' INNER JOIN WK_BATCH_LOG as wb '
+    				.'  ON wc.batch_log_id = wb.batch_log_id '
     				.' WHERE wc.batch_log_id = :batch_log_id';
     
 			$params = array('batch_log_id'     => (int)$param['batch_log_id']);
@@ -190,8 +192,8 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     		}
     		
     		Log::query(sprintf('SQL::getBatchDetailListCount() query=%s',$sql));
-    		Log::query(sprintf('SQL::getBatchDetailListCount() param:batch_log_id=%s',$param['batch_log_id']));
-    		Log::query(sprintf('SQL::getBatchDetailListCount() param:import_state=%s',$param['content_state']));
+    		if(isset($param['batch_log_id'])) Log::query(sprintf('SQL::getBatchDetailListCount() param:batch_log_id=%s',$param['batch_log_id']));
+    		if(isset($param['content_state'])) Log::query(sprintf('SQL::getBatchDetailListCount() param:import_state=%s',$param['content_state']));
     		
     		$stmt = $this->adapter->createStatement($sql);
     		$results = $stmt->execute($params);
@@ -205,23 +207,23 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     		}
     	}
     	catch( \ErrorException $ee ) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailListCount() --  do not select from WK_BATCH_LOG_CONTENT_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailListCount() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $ee->getMessage());
     		throw new DbAccessException($ee->getMessage());
     	}
     	catch( \PDOException $pe ) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailListCount() --  do not select from WK_BATCH_LOG_CONTENT_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailListCount() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $pe->getMessage());
     		throw new DbAccessException($pe->getMessage());
     	}
     	catch (\Exception $e) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailListCount() --  do not select from WK_BATCH_LOG_CONTENT_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailListCount() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $e->getMessage());
     		throw new DbAccessException($e->getMessage());
     	}
     
     	$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
-    	Log::debug(__FILE__, __LINE__, 'INFO   getBatchDetailListCount() --  select from WK_BATCH_LOG_CONTENT_DETAIL Table. get Batch Data. ('.$diff_time.')');
+    	Log::debug(__FILE__, __LINE__, 'INFO   getBatchDetailListCount() --  select from WK_BATCH_LOG_CONTENTS_DETAIL Table. get Batch Data. ('.$diff_time.')');
     	return $aryData["sumcnt"];
     }
     
@@ -239,26 +241,28 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     	try {
     		 
     		$sql =   'SELECT @rownum:=@rownum+1 as ROW_NUM'
-    				.'    ,batch_id '
-    				.'    ,contents_id '
-    				.'    ,title '
-    				.'    ,recovery_state '
-    				.'    ,import_state '
-    				.' FROM (SELECT @rownum:=0) as dummy , WK_BATCH_LOG_CONTENT as wc '
-    				.' INNER JOIN WK_BATCH_LOG_CONTENT_DETAIL as wcd '
+    				.'    ,wb.batch_id '
+    				.'    ,wcd.contents_id '
+    				.'    ,wcd.title '
+    				.'    ,wcd.recovery_state '
+    				.'    ,wcd.import_state '
+    				.' FROM (SELECT @rownum:=0) as dummy , WK_BATCH_LOG_CONTENTS as wc '
+    				.' INNER JOIN WK_BATCH_LOG_CONTENTS_DETAIL as wcd '
     				.'  ON wc.batch_transaction_id = wcd.batch_transaction_id '
+    				.' INNER JOIN WK_BATCH_LOG as wb '
+    				.'  ON wc.batch_log_id = wb.batch_log_id '
     				.' WHERE wc.batch_log_id = :batch_log_id';
     		
     		$params = array( 'batch_log_id'   => (int)$param['batch_log_id'] );
     
     		if(isset($param['content_state']) && $param['content_state'] != 0){
-    			$sql = $sql.' AND import_state = :content_state';
+    			$sql = $sql.' AND wcd.import_state = :content_state';
     			$params['content_state'] = (int)$param['content_state'];
     		}
 
     		Log::query(sprintf('SQL::getBatchDetailList() query=%s',$sql));
-    		Log::query(sprintf('SQL::getBatchDetailList() param:batch_log_id=%s',$param['batch_log_id']));
-    		Log::query(sprintf('SQL::getBatchDetailList() param:import_state=%s',$param['content_state']));
+    		if(isset($param['batch_log_id'])) Log::query(sprintf('SQL::getBatchDetailListCount() param:batch_log_id=%s',$param['batch_log_id']));
+    		if(isset($param['content_state'])) Log::query(sprintf('SQL::getBatchDetailListCount() param:import_state=%s',$param['content_state']));
     		
 			$stmt = $this->adapter->createStatement($sql);
     		$results = $stmt->execute($params);
@@ -318,8 +322,8 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     				.'    ,wcd.error_reason '
     				.'    ,wcd.recovery_state '
     				.'    ,s.service_name '
-    				.' FROM WK_BATCH_LOG_CONTENT as wc '
-    				.' INNER JOIN WK_BATCH_LOG_CONTENT_DETAIL as wcd '
+    				.' FROM WK_BATCH_LOG_CONTENTS as wc '
+    				.' INNER JOIN WK_BATCH_LOG_CONTENTS_DETAIL as wcd '
     				.'  ON wc.batch_transaction_id = wcd.batch_contents_id '
     				.' INNER JOIN WK_BATCH_LOG as wl ON ( wc.batch_log_id = wl.batch_log_id ) '
     				.' INNER JOIN WK_BATCH as b ON ( wl.batch_id = b.batch_id ) '
@@ -378,7 +382,7 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     	$Rrow = 0;
     	try {
     		 
-    		$sql =   ' UPDATE WK_BATCH_LOG_CONTENT_DETAIL '
+    		$sql =   ' UPDATE WK_BATCH_LOG_CONTENTS_DETAIL '
     				.' SET recovery_state = 54 '
  					.' ,recovery_date = :recovery_date '
     				.' ,recovery_user = :user_id '

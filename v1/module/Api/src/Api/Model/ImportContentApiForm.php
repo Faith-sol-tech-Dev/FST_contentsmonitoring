@@ -5,6 +5,7 @@ namespace Api\Model;
 use Zend\Http\Response;
 
 use ContentsMonitor\Common\LogClass as Log;
+use ContentsMonitor\Common\UtilityClass as Utility;
 use ContentsMonitor\Common\RequestClass as RequestClass;
 use ContentsMonitor\Common\ValidationClass as Validation;
 
@@ -19,6 +20,8 @@ class ImportContentApiForm extends CommonForm
 	 */
 	private function isValidateError($req, $n = 0)
 	{
+		$start_time=microtime(true);
+		
 		// 指定深度以上はエラーとする
 		if ($n >= 10) {
 			return true;
@@ -35,6 +38,10 @@ class ImportContentApiForm extends CommonForm
 		} else {
 			$result = is_null($req);
 		}
+		
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+		Log::batch(__FILE__, __LINE__, 'INFO   isValidateError() --  has completed. ('.$diff_time.')');
+		
 		return $result;
 	}
 	
@@ -46,7 +53,7 @@ class ImportContentApiForm extends CommonForm
 	 */
 	private function validateResponseApi($item_val)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::validateResponseApi() Start.');
+		$start_time=microtime(true);
 		
 		$req = array();
 		
@@ -106,7 +113,8 @@ class ImportContentApiForm extends CommonForm
 		} else {
 			//
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::validateResponseApi() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   validateResponseApi() --  has completed. ('.$diff_time.')');
 		return $req;
 	}
 	
@@ -116,7 +124,7 @@ class ImportContentApiForm extends CommonForm
 	 */
 	private function importResponseApi()
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::importResponseApi() Start.');
+		$start_time=microtime(true);
 		
 		$this->updateBatchLogDataState(API_API_CHECK_API);
 		Log::batch(__FILE__, __LINE__, 'updateBatchLogDataState = ' . API_API_CHECK_API);
@@ -160,10 +168,12 @@ class ImportContentApiForm extends CommonForm
 					// バッチログコンテンツ系テーブル登録
 					$batch_contents_ids = $this->creatBatchLogContent($contents_type, $req);
 				} catch (DbAccessException $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set WK_BATCH_LOG_CONTENTS  Table.');
 					Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 					$error = true;
 					continue;
 				} catch (\Exception $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set WK_BATCH_LOG_CONTENTS  Table.');
 					Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 					$error = true;
 					continue;
@@ -175,10 +185,12 @@ class ImportContentApiForm extends CommonForm
 					// コンテンツ系テーブル登録
 					$this->creatContent(WK_BATCH_IMPORT_TYPE_API, $contents_type, $req);
 				} catch (DbAccessException $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set TRN_CONTENTS  Table.');
 					Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 					$error = true;
 					$rsError = true;
 				} catch (\Exception $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set TRN_CONTENTS  Table.');
 					Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 					$error = true;
 					$rsError = true;
@@ -211,7 +223,8 @@ class ImportContentApiForm extends CommonForm
 			$this->sendMail($this->configApiMail, $template['subject'], $template['body']);
 		}
 		
-		Log::batch(__FILE__, __LINE__, 'Debug::importResponseApi() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   importResponseApi() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -222,17 +235,17 @@ class ImportContentApiForm extends CommonForm
 	 */
 	public function import($request)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::import() Start.');
+     	$start_time=microtime(true);
 		
 		try {
 			// トリガー種別チェック
-			$this->validateTriggerType($request['trigger_type']);
+			$this->validateTriggerType($request['trigger_type'], $request['data']);
 			
 			// バッチログ作成
 			$this->creatBatchLogData(WK_BATCH_IMPORT_TYPE_API, $request['trigger_type']);
 			
 			// バッチ(API)情報取得
-			$this->getBatch($request['batch_id']);
+			$this->getBatch($request['batch_id'], $request['data']);
 			
 			// ロック
 			$this->updateBatchProc(WK_BATCH_PROC_STATE_RUN);
@@ -250,16 +263,24 @@ class ImportContentApiForm extends CommonForm
 			} else {
 				$returnCode = $e->getCode();
 			}
+			Log::batch(__FILE__, __LINE__, 'ERROR import() --  failed import  API Data.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   import() --  has completed import. ('.$diff_time.')');
 		}
 		// アンロック
+     	$start_time=microtime(true);
 		try {
 			$this->updateBatchProc(WK_BATCH_PROC_STATE_WAIT);
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR import() --  failed unlock  API Data.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			$returnCode = Response::STATUS_CODE_500;
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   import() --  has completed unlock. ('.$diff_time.')');
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::import() End.');
 		return $returnCode;
 	}
 }

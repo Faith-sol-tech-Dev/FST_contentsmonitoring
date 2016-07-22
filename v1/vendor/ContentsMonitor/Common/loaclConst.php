@@ -7,7 +7,7 @@ define('CONF_PATH', 'config/autoload/'.$_SERVER['APPLICATION_ENV'].'.php');
 // ----------------------------------------------------
 // ## URL設定
 
-define('APP_PATH', '/v1/monitor/');
+define('APP_PATH', '/monitor/');
 
 /**
  * /monitor/アプリケーションURL
@@ -185,3 +185,8 @@ define('FORMAT_TYPE_MP4', 'mp4');
 
 // チェック文言定数
 define('CHK_COOKIE_SET', 'FST_CHECK');
+
+// 日付時間設定
+define ('DATE_MIN_TIME', ' 0:00:00');
+define ('DATE_MAX_TIME', ' 23:59:59');
+

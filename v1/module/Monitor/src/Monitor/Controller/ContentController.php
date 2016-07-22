@@ -611,7 +611,7 @@ class ContentController extends CommonController
     	$ret = false;
     	$ret_msg = "";
     	try {
-
+			$service_cd = $this->checkService();
     		// サービス情報を取得
     		$sform = new ServiceForm($this->getServiceLocator());
     		$this->setService( $service_cd );
@@ -632,7 +632,7 @@ class ContentController extends CommonController
     				'sslallowselfsigned' => false,
 	    		);
     			$api_type = $sform->service_data->api_type; //API種別
-	    		$url = 'https://ip128.ip140.faith-sol-tech.local/stub/api/setAccessToken_ok'; //(暫定的)
+	    		$url = 'https://ip128.ip140.faith-sol-tech.local/stub/api/setAccessToken_json_ok'; //(暫定的)
 	    		$client = new Client($url, $config);
     			$resp = $client->send();
     			
@@ -654,11 +654,11 @@ class ContentController extends CommonController
     			
     			//　レスポンス内容チェック
     			$ary_result = array();
-    			if( 'xml' == $api_type ) {
+    			if( API_TYPE_XML == $api_type ) {
     				// XMLフォーマットの場合
     				$ary_result = Utility::simplexml_load_string($resp->getBody());
     			}
-    			elseif( 'json' == $api_type ) {
+    			elseif( API_TYPE_JSON == $api_type ) {
     				//JSONフォーマットの場合
     				$ary_result = Utility::json_decode($resp->getBody(), true);
     			}

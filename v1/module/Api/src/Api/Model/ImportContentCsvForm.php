@@ -8,6 +8,7 @@ use SplFileObject;
 use Zend\Http\Response;
 
 use ContentsMonitor\Common\LogClass as Log;
+use ContentsMonitor\Common\UtilityClass as Utility;
 use ContentsMonitor\Common\RequestClass as RequestClass;
 use ContentsMonitor\Common\ValidationClass as Validation;
 
@@ -28,7 +29,7 @@ class ImportContentCsvForm extends CommonForm
 	 */
 	protected function readCsv()
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::readCsv() Start.');
+		$start_time=microtime(true);
 		// CSV形式
 		$csv_basic = array(
 			CSV_COLMON_SERVICE_CODE, 
@@ -118,10 +119,13 @@ class ImportContentCsvForm extends CommonForm
 			if (isset($temp) && $temp !== false) {
 				fclose($temp);
 			}
+			Log::batch(__FILE__, __LINE__, 'ERROR readCsv() --  failed read CSV.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   readCsv() --  has completed. ('.$diff_time.')');
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::readCsv() End.');
 		return $items;
 	}
 	
@@ -131,7 +135,7 @@ class ImportContentCsvForm extends CommonForm
 	 */
 	protected function chk_csv_data_db($item_val)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::chk_csv_data_db() Start.');
+		$start_time=microtime(true);
 		// 引数チェック
 		if (is_null($item_val)) {
 			throw new Exception('$item_val is null');
@@ -274,10 +278,12 @@ class ImportContentCsvForm extends CommonForm
 					return false;
 			}
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR chk_csv_data_db() --  validate check error.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::chk_csv_data_db() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   chk_csv_data_db() --  has completed. ('.$diff_time.')');
 		return $req;
 	}
 	
@@ -288,7 +294,7 @@ class ImportContentCsvForm extends CommonForm
 	 */
 	protected function chk_csv_data($req)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::chk_csv_data() Start.');
+		$start_time=microtime(true);
 		// 引数チェック
 		if (is_null($req)) {
 			throw new Exception('$req is null');
@@ -392,10 +398,12 @@ class ImportContentCsvForm extends CommonForm
 					return false;
 			}
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR chk_csv_data() --  validate check error.');
 			Log::batch(__FILE__, __LINE__, $e->getMessage());
 			throw $e;
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::chk_csv_data() end.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   chk_csv_data() --  has completed. ('.$diff_time.')');
 		return true;
 	}
 	/**** CSVファイル操作 end   ****/
@@ -406,7 +414,7 @@ class ImportContentCsvForm extends CommonForm
 	 */
 	private function importResponseApi()
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::importResponseApi() Start.');
+		$start_time=microtime(true);
 		
 		if ($this->responseApi === null) {
 			$this->updateBatchLogDataState(API_CSV_NO_FILE, true);
@@ -480,6 +488,7 @@ class ImportContentCsvForm extends CommonForm
 					// バッチログコンテンツ系テーブル登録
 					$batch_contents_ids = $this->creatBatchLogContent($contents_type, $req);
 				} catch (\Exception $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set WK_BATCH_LOG_CONTENTS  Table.');
 					Log::batch(__FILE__, __LINE__, $e->getMessage());
 					$error = true;
 					continue;
@@ -491,10 +500,12 @@ class ImportContentCsvForm extends CommonForm
 					// コンテンツ系テーブル登録
 					$this->creatContent(WK_BATCH_IMPORT_TYPE_CSV, $contents_type, $req);
 				} catch (DbAccessException $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set TRN_CONTENTS  Table or TRN_CONTENTS_DETAIL  Table.');
 					Log::batch(__FILE__, __LINE__, $e->getMessage());
 					$error = true;
 					$rsError = true;
 				} catch (\Exception $e) {
+					Log::batch(__FILE__, __LINE__, 'ERROR importResponseApi() --  failed set TRN_CONTENTS  Table or TRN_CONTENTS_DETAIL  Table.');
 					Log::batch(__FILE__, __LINE__, $e->getMessage());
 					$error = true;
 					$rsError = true;
@@ -526,7 +537,8 @@ class ImportContentCsvForm extends CommonForm
 			$template = $this->configApiMail['template']['success'];
 			$this->sendMail($this->configApiMail, $template['subject'], $template['body']);
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::importResponseApi() End.');
+		$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::batch(__FILE__, __LINE__, 'INFO   importResponseApi() --  has completed. ('.$diff_time.')');
 	}
 	
 	/**
@@ -536,17 +548,17 @@ class ImportContentCsvForm extends CommonForm
 	 */
 	public function import($request)
 	{
-		Log::batch(__FILE__, __LINE__, 'Debug::import() Start.');
+		$start_time=microtime(true);
 		
 		try {
 			// トリガー種別チェック
-			$this->validateTriggerType($request['trigger_type']);
+			$this->validateTriggerType($request['trigger_type'], $request['data']);
 			
 			// バッチログ作成
 			$this->creatBatchLogData(WK_BATCH_IMPORT_TYPE_CSV, $request['trigger_type']);
 			
 			// バッチ(API)情報取得
-			$this->getBatch($request['batch_id']);
+			$this->getBatch($request['batch_id'], $request['data']);
 			
 			// ロック
 			$this->updateBatchProc(WK_BATCH_PROC_STATE_RUN);
@@ -564,16 +576,24 @@ class ImportContentCsvForm extends CommonForm
 			} else {
 				$returnCode = $e->getCode();
 			}
+			Log::batch(__FILE__, __LINE__, 'ERROR import() --  failed import  CSV Data.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   import() --  has completed import. ('.$diff_time.')');
 		}
 		// アンロック
+     	$start_time=microtime(true);
 		try {
 			$this->updateBatchProc(WK_BATCH_PROC_STATE_WAIT);
 		} catch (\Exception $e) {
+			Log::batch(__FILE__, __LINE__, 'ERROR import() --  failed unlock  CSV Data.');
 			Log::batch($e->getFile(), $e->getLine(), $e->getMessage());
 			$returnCode = Response::STATUS_CODE_500;
+		} finally {
+			$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+			Log::batch(__FILE__, __LINE__, 'INFO   import() --  has completed unlock. ('.$diff_time.')');
 		}
-		Log::batch(__FILE__, __LINE__, 'Debug::import() End.');
 		return $returnCode;
 	}
 }

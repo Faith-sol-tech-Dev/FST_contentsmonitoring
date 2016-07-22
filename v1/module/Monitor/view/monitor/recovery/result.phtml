@@ -189,7 +189,14 @@ $this->headTitle($title);
 				else echo '<td class="sumcnt">0</td>';
 				//ステータス
 				if(isset($item["recovery_state"])) echo '<td class="recovery_state">'.$this->rform->recovery_state[$item["recovery_state"]].'</td>';
-				else echo '<td class="recovery_state">'.$this->rform->recovery_state[0].'</td>';
+				else {
+					if(in_array($item["state"], array('19','32','49','16','29','46'))) {
+						echo '<td class="recovery_state">'.$this->rform->recovery_state[0].'</td>';
+					}
+					else {
+						echo '<td class="recovery_state">'.$this->rform->recovery_state[1].'</td>';
+					}
+				}
 				//URL
 				if(isset($item["batch_log_id"])) echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_LIST_PATH, $item["batch_log_id"]).'">&gt;&gt;</td>';
 				echo '</tr>';

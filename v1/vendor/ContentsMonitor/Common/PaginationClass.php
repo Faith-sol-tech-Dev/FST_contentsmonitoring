@@ -105,7 +105,7 @@ class PaginationClass
 	function Create() {
 		if ($this->maxpage <= 1) return;
 
-		require_once(dirname(__DIR__).'../Layout/pagination.php');
+		require_once(dirname(__DIR__).'/Layout/pagination.php');
 	}
 	
 	private function createPageTurnerHref($pageNo)

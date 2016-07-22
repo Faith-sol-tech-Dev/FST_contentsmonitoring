@@ -173,7 +173,12 @@ class ValidationClass
 					}
 						
 				} else {
-					return ($title != '' ? sprintf($message->HTTP_DISPLAY_MESSAGE['content_search_date_title'], $title) : $message->HTTP_DISPLAY_MESSAGE['content_search_date'] );
+					if(preg_match('/^(?P<year>[0-9]{4})\-(?P<month>[0-9]{2})-(?P<day>[0-9]{2}) ([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/', $value, $m)) {
+						if(!checkdate($m['month'] , $m['day'] , $m['year'])){
+							Log::notice(__FILE__, __LINE__, $column . ' = [' . $value . ']');
+							return ($title != '' ? sprintf($message->HTTP_DISPLAY_MESSAGE['content_search_date_title'], $title) : $message->HTTP_DISPLAY_MESSAGE['content_search_date'] );
+						}
+					}
 				}
 				break;
 			case 5:

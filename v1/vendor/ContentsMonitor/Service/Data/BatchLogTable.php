@@ -97,28 +97,30 @@ class BatchLogTable extends AbstractLocalAdapter implements AdapterAwareInterfac
     		$sql =   'SELECT COUNT(0) AS sumcnt '
     				.' FROM WK_BATCH_LOG as wl '
     				.' INNER JOIN WK_BATCH as b ON ( wl.batch_id = b.batch_id ) '
+    				.' INNER JOIN WK_BATCH_PROC as wlp ON ( wlp.batch_id = b.batch_id ) '
     				.' INNER JOIN MST_SERVICE as s ON ( b.service_id = s.service_id ) '
-		    		.' WHERE 0=0 ';
+		    		.'  WHERE wlp.state = 0 ';
     		if(!empty($param['check_state1']) || !empty($param['check_state2']) || !empty($param['check_state3'])) {
     				$sql .= '   AND ( ';
-    				if(!empty($param['check_state1'])) { $sql .= 'b.import_type = :check_state1'; }
-    		    	if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'b.import_type = :check_state2'; }
-    				if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'b.import_type = :check_state3'; }
+    				if(!empty($param['check_state1'])) { $sql .= 'wl.import_type = :check_state1'; }
+    		    	if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'wl.import_type = :check_state2'; }
+    				if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'wl.import_type = :check_state3'; }
     				$sql .= ' ) ';
     		}
     	    if(!empty($param['content_state']) && $param['content_state'] > 0) {
     	    		if(1==$param['content_state']) {
     	    			//OK
-    	    			$sql .= '   AND b.state IN (19,32,49) ';
+    	    			$sql .= '   AND wl.state IN (19,32,49,16,29,46) ';
     	    		}
     	    		elseif(2==$param['content_state']) {
     	    			//NG
-    	    			$sql .= '   AND b.state NOT IN (19,32,49) ';
+    	    			$sql .= '   AND wl.state NOT IN (19,32,49,16,29,46) ';
     	    		}
     	    }
     		if(!empty($param['import_date_min']) && !empty($param['import_date_max'])) {
-    	    		$sql .= '   AND b.start_date between :import_date_min and :import_date_max ';
+    	    		$sql .= '   AND ( wl.start_date >= :import_date_min and wl.end_date <= :import_date_max )';
     	    }
+    	    
     	    if(!empty($param['service_list'])) {
     	    		$sql .= '   AND s.service_id = :service_list ';
     	    }
@@ -196,29 +198,31 @@ class BatchLogTable extends AbstractLocalAdapter implements AdapterAwareInterfac
     				.'    ,(SELECT COUNT(0) FROM WK_BATCH_LOG_CONTENTS AS wblc ' 
     				.'		WHERE wl.batch_log_id = wblc.batch_log_id GROUP BY wblc.batch_log_id) AS sumcnt '
     				.'    ,wl.recovery_state '
+    				.'    ,wl.state '
     				.' FROM WK_BATCH_LOG as wl '
     				.' INNER JOIN WK_BATCH as b ON ( wl.batch_id = b.batch_id ) '
+    				.' INNER JOIN WK_BATCH_PROC as wlp ON ( wlp.batch_id = b.batch_id ) '
     				.' INNER JOIN MST_SERVICE as s ON ( b.service_id = s.service_id ) '
-		    		.'  WHERE 0=0 ';
+		    		.'  WHERE wlp.state = 0 ';
     		if(!empty($param['check_state1']) || !empty($param['check_state2']) || !empty($param['check_state3'])) {
     				$sql .= '   AND ( ';
-    				if(!empty($param['check_state1'])) { $sql .= 'b.import_type = :check_state1'; }
-    		    	if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'b.import_type = :check_state2'; }
-    				if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'b.import_type = :check_state3'; }
+    				if(!empty($param['check_state1'])) { $sql .= 'wl.import_type = :check_state1'; }
+    		    	if(!empty($param['check_state2'])) { $sql .= (!empty($param['check_state1']) ? ' OR ':'').'wl.import_type = :check_state2'; }
+    				if(!empty($param['check_state3'])) { $sql .= ((!empty($param['check_state1'])||!empty($param['check_state2'])) ? ' OR ':'').'wl.import_type = :check_state3'; }
     				$sql .= ' ) ';
     		}
     	    if(!empty($param['content_state']) && $param['content_state'] > 0) {
     	    		if(1==$param['content_state']) {
     	    			//OK
-    	    			$sql .= '   AND b.state IN (19,32,49) ';
+    	    			$sql .= '   AND wl.state IN (19,32,49,16,29,46) ';
     	    		}
     	    		elseif(2==$param['content_state']) {
     	    			//NG
-    	    			$sql .= '   AND b.state NOT IN (19,32,49) ';
+    	    			$sql .= '   AND wl.state NOT IN (19,32,49,16,29,46) ';
     	    		}
     	    }
     		if(!empty($param['import_date_min']) && !empty($param['import_date_max'])) {
-    	    		$sql .= '   AND b.start_date between :import_date_min and :import_date_max ';
+    	    		$sql .= '   AND ( wl.start_date >= :import_date_min and wl.end_date <= :import_date_max )';
     	    }
     	    if(!empty($param['service_list'])) {
     	    		$sql .= '   AND s.service_id = :service_list ';
@@ -338,7 +342,7 @@ class BatchLogTable extends AbstractLocalAdapter implements AdapterAwareInterfac
      * 取込検索結果のbatchデータ取得
      *
      * @param  array $param   パラメータ batch_id, contents_id
-     * @return       $row  	　　WK_BATCH_LOG_CONTENT_DETAILテーブル情報
+     * @return       $row  	　　WK_BATCH_LOG_CONTENTS_DETAILテーブル情報
      */
     public function getReuptake( $param )
     {
@@ -388,23 +392,23 @@ class BatchLogTable extends AbstractLocalAdapter implements AdapterAwareInterfac
     		}
     	}
     	catch( \ErrorException $ee ) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getReuptake() --  do not select from WK_BATCH_LOG_CONTENT_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getReuptake() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $ee->getMessage());
     		throw new DbAccessException($ee->getMessage());
     	}
     	catch( \PDOException $pe ) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getReuptake() --  do not select from WK_BATCH_LOG_CONTENT_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getReuptake() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $pe->getMessage());
     		throw new DbAccessException($pe->getMessage());
     	}
     	catch (\Exception $e) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getReuptake() --  do not select from WK_BATCH_LOG_CONTENT_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getReuptake() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $e->getMessage());
     		throw new DbAccessException($e->getMessage());
     	}
     	 
     	$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
-    	Log::debug(__FILE__, __LINE__, 'INFO   getReuptake() --  select from WK_BATCH_LOG_CONTENT_DETAIL Table. get Batch Detail Data. ('.$diff_time.')');
+    	Log::debug(__FILE__, __LINE__, 'INFO   getReuptake() --  select from WK_BATCH_LOG_CONTENTS_DETAIL Table. get Batch Detail Data. ('.$diff_time.')');
     	return $aryData;
     }
     

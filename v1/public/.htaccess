@@ -16,3 +16,12 @@ RewriteRule ^(.*) - [E=BASE:%1]
 RewriteRule ^(.*)$ %{ENV:BASE}index.php [NC,L]
 
 SetEnv APPLICATION_ENV "development"
+
+php_value mbstring.language Japanese
+php_value mbstring.internal_encoding UTF-8
+php_value mbstring.http_input UTF-8
+php_value mbstring.http_output pass
+php_value mbstring.encoding_translation On
+php_value mbstring.detect_order auto
+php_value mbstring.substitute_character none
+php_value mbstring.func_overload 0

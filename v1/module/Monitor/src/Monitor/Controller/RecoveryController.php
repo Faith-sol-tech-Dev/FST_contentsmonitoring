@@ -164,25 +164,33 @@ class RecoveryController extends CommonController
     		if($request->isPost()){
     			// 検索結果情報を取得
     			if( 'selectItem'==$param ) {
+	    			$min_date = empty($this->params()->fromPost( 'content_import_s', "" )) ? 
+	    									$this->params()->fromPost( 'content_import_s', "" ) : $this->params()->fromPost( 'content_import_s', "" ).DATE_MIN_TIME;
+	    			$max_date = empty($this->params()->fromPost( 'content_import_e', "" )) ? 
+	    									$this->params()->fromPost( 'content_import_e', "" ) : $this->params()->fromPost( 'content_import_e', "" ).DATE_MAX_TIME;
     				$aryData = array(
     						'check_state1'    => $this->params()->fromPost( 'content_import_type1', "" ),
     						'check_state2'    => $this->params()->fromPost( 'content_import_type2', "" ),
     						'check_state3'    => $this->params()->fromPost( 'content_import_type3', "" ),
     						'content_state'   => $this->params()->fromPost( 'content_state', "" ),
-    						'import_date_min' => $this->params()->fromPost( 'content_import_s', "" ),
-    						'import_date_max' => $this->params()->fromPost( 'content_import_e', "" ),
+    						'import_date_min' => $min_date,
+    						'import_date_max' => $max_date,
     						'service_list'    => $this->params()->fromPost( 'service_list', "" ),
     						'page_no'         => $this->params()->fromPost( 'p',"")
     				);
     			}
     			elseif( 'pagination'==$param ) {
+	    			$min_date = empty($this->params()->fromPost( 'hd_content_impDate_str', "" )) ? 
+	    									$this->params()->fromPost( 'hd_content_impDate_str', "" ) : $this->params()->fromPost( 'hd_content_impDate_str', "" ).DATE_MIN_TIME;
+	    			$max_date = empty($this->params()->fromPost( 'hd_content_impDate_end', "" )) ? 
+	    									$this->params()->fromPost( 'hd_content_impDate_end', "" ) : $this->params()->fromPost( 'hd_content_impDate_end', "" ).DATE_MAX_TIME;
     				$aryData = array(
     						'check_state1'    => $this->params()->fromPost( 'hd_content_import_type1', "" ),
     						'check_state2'    => $this->params()->fromPost( 'hd_content_import_type2', "" ),
     						'check_state3'    => $this->params()->fromPost( 'hd_content_import_type3', "" ),
     						'content_state'   => $this->params()->fromPost( 'hd_content_state', "" ),
-    						'import_date_min' => $this->params()->fromPost( 'hd_content_impDate_str', "" ),
-    						'import_date_max' => $this->params()->fromPost( 'hd_content_impDate_end', "" ),
+    						'import_date_min' => $min_date,
+    						'import_date_max' => $max_date,
     						'service_list'    => $this->params()->fromPost( 'hd_service_list', "" ),
     						'page_no'         => $this->params()->fromPost( 'p',"")
     				);
@@ -309,7 +317,7 @@ class RecoveryController extends CommonController
     		$sform->getServiceListData();  // サービス情報一覧
     
     		//　表示する件数
-    		$count = 2;
+    		$count = 100;
     
     		$pagination;
     		$msg_none = "";

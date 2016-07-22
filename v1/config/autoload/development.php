@@ -12,7 +12,7 @@
  */
 
 return array(
-	'v'  => array('v' => 'v1'),
+	'v'  => array('v' => ''),
 	'db' => array(
 		//'dsn' => 'mysql:dbname=dz49_contents_monitor_stg;host=mysql1.sun.site-advance.jp',
 		//'username' => 'dz49_9835',
@@ -51,13 +51,14 @@ return array(
 			),
 			'to' => array(
 				array(
-					'email' => 'dev-test@faith-sol-tech.com',
+//					'email' => 'dev-test@faith-sol-tech.com',
+					'email' => 'utaka@faith-sol-tech.com',
 					'name' => 'ふぇいす',
 				),
-				array(
-					'email' => 'inoue@verso.jp',
-					'name' => 'べるそ',
-				),
+//				array(
+//					'email' => 'inoue@verso.jp',
+//					'name' => 'べるそ',
+//				),
 			),
 			'template' => array(
 				'success' => array(
