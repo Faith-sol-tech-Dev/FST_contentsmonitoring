@@ -25,7 +25,7 @@ class ImportContentCsvController extends CommonController
 		try {
 			$request = $this->getRequest();
 			
-			$debug = false;
+			$debug = true;
 			if ($debug) {
 				if (!$request->isGet()) {
 					// error

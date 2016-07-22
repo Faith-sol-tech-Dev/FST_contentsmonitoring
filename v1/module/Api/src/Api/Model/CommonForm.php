@@ -690,7 +690,7 @@ class CommonForm
 					CURLOPT_MAXREDIRS => $this->configApi['max_redirects'],
 					CURLOPT_TIMEOUT => $this->configApi['timeout'],
 					CURLOPT_USERAGENT => $this->configApi['user_agent'],
-					CURLOPT_SSL_VERIFYPEER => false, // 本番環境ではtrue推奨
+					CURLOPT_SSL_VERIFYPEER => true, // 本番環境ではtrue推奨
 				)
 			)
 		);

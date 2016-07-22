@@ -17,7 +17,7 @@ return array(
 		//'dsn' => 'mysql:dbname=dz49_contents_monitor_stg;host=mysql1.sun.site-advance.jp',
 		//'username' => 'dz49_9835',
 		//'password' => 'asdf!234',
-		'dsn' => 'mysql:dbname=goto.cm;host=10.150.200.128;',
+		'dsn' => 'mysql:dbname=staging.cm;host=10.150.200.128;',
 		'username' => 'root',
 		'password' => 'Work-277',
 	),

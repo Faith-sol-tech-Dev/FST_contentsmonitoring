@@ -173,7 +173,7 @@ class RecoveryForm extends Form
 		//実行ステータス
 		$this->status = array( '0' => '', '1'=>'OK', '2'=>'NG', );
 		//リカバリーステータス
-		$this->recovery_state = array( '0' => '正常終了', '1' => 'リカバリ', '54' => 'リカバリ済み');
+		$this->recovery_state = array( '0' => '正常終了', '1' => 'リカバリ', '51' => 'リカバリ', '52' => 'リカバリ', '53' => 'リカバリ', '54' => 'リカバリ済み');
 		//エラー事由
 		$this->error_reason = array( '0' => 'リカバリ再実行済み', '1' => 'DBによる不具合', '2' => 'その他');
 	}

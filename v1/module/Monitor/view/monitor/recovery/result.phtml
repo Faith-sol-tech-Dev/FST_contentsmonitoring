@@ -131,6 +131,7 @@ $this->headTitle($title);
 </div>
 
 <div class="result_search">
+	<a id="section_top"></a>
 	<p id="alert_msg"><?php echo $this->display_msg ?></p>
 
 	<h3>検索結果：</h3>
@@ -184,7 +185,8 @@ $this->headTitle($title);
 				//バッチNo
 				if(isset($item["batch_id"])) echo '<td class="batch_id">'.$item["batch_id"].'</td>';
 				//取込件数
-				if(isset($item["sumcnt"])) echo '<td class="sumcnt">'.$item["sumcnt"].'</td>';
+				if(!empty($item["sumcnt"])) echo '<td class="sumcnt">'. $item["sumcnt"] .'</td>';
+				else echo '<td class="sumcnt">0</td>';
 				//ステータス
 				if(isset($item["recovery_state"])) echo '<td class="recovery_state">'.$this->rform->recovery_state[$item["recovery_state"]].'</td>';
 				else echo '<td class="recovery_state">'.$this->rform->recovery_state[0].'</td>';
@@ -195,6 +197,7 @@ $this->headTitle($title);
 			endforeach;
 			?>
 			</table>
+			<a href="#section_top" >TOPに戻る</a>
 		</div>
 	<?php else: ?>
 		<div class="result_cnt">

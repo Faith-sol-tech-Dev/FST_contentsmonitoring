@@ -77,6 +77,7 @@ return array(
         'invokables' => array(
             'Api\Controller\Index' => 'Api\Controller\IndexController',
             'Api\Controller\ImportContentApi' => 'Api\Controller\ImportContentApiController',
+            'Api\Controller\ImportContentCsv' => 'Api\Controller\ImportContentCsvController',
         ),
     ),
     'view_manager' => array(
