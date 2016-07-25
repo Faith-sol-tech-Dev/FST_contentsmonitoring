@@ -292,6 +292,7 @@ class BatchLogTable extends AbstractLocalAdapter implements AdapterAwareInterfac
     	try {
     		 
     		$sql =   'SELECT bl.batch_id '
+    				.'    ,bl.batch_log_id '
     				.'    ,b.batch_name '
     				.'    ,b.service_id '
     				.'    ,bl.start_date '
@@ -350,34 +351,36 @@ class BatchLogTable extends AbstractLocalAdapter implements AdapterAwareInterfac
     	
     	$aryData = array();
     	try {
-    		 
-    		$sql =   'SELECT w.service_id '
-    				.'    ,w.import_type '
-  					.'    ,w.start_ym '
-    				.'    ,w.start_date '
+    		$sql =   'SELECT s.service_id '
+    				.'    ,wb.import_type '
+  					.'    ,wb.start_ym '
+    				.'    ,wb.start_date '
+    				.'    ,wd.batch_transaction_id '
     				.'    ,wd.contents_id '
-    				.'    ,wd.movie_url '
-    				.'    ,wd.image_url '
+    				.'    ,wd.contents_type '
+    				//.'    ,wd.sub_id '
+    				.'    ,wd.url '
     				.'    ,wd.comment '
     				.'    ,wd.title '
-    				.'    ,wd.name '
+    				.'    ,wd.user '
     				.'    ,wd.create_date '
     				.'    ,s.monitoring_start_date '
     				.'    ,s.monitoring_end_date '
     				.'    ,(SELECT MAX(contents_id) FROM TRN_CONTENTS) as max_id '
-    				.' FROM WK_BATCH_LOG AS w　'
-    				.' INNER JOIN WK_BATCH_LOG_CONTENTS as wc ON ( w.batch_log_id = wc.batch_log_id ) '
+    				.' FROM WK_BATCH_LOG as wb'
+    				.' INNER JOIN WK_BATCH_LOG_CONTENTS as wc ON ( wb.batch_log_id = wc.batch_log_id ) '
     				.' INNER JOIN WK_BATCH_LOG_CONTENTS_DETAIL as wd ON ( wc.batch_transaction_id = wd.batch_transaction_id ) '
-    				.' INNER JOIN MST_SERVICE as s ON ( w.service_id = s.service_id ) '
-    				.' WHERE w.batch_id = :batch_id '
+					.' INNER JOIN WK_BATCH as b ON ( wb.batch_id = b.batch_id )  '
+    				.' INNER JOIN MST_SERVICE as s ON ( b.service_id = s.service_id ) '
+    				.' WHERE wb.batch_log_id = :batch_log_id '
     				.'   AND wd.contents_id = :contents_id ';
 
-    		$params = array( 'batch_id'   => (int)$param['batch_id'],
+    		$params = array( 'batch_log_id'=> (int)$param['batch_log_id'],
     						 'contents_id' => (int)$param['contents_id']
 							);
     
     		Log::query(sprintf('SQL::getReuptake() query=%s',$sql));
-    		Log::query(sprintf('SQL::getReuptake() param:batch_id=%s',$param['batch_id']));
+    		Log::query(sprintf('SQL::getReuptake() param:batch_log_id=%s',$param['batch_log_id']));
     		Log::query(sprintf('SQL::getReuptake() param:contents_id=%s',$param['contents_id']));
     		
 			$stmt = $this->adapter->createStatement($sql);

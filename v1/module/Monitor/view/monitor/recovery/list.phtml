@@ -55,9 +55,13 @@ $this->headTitle($title);
 	</p>
 	<p><span>　バッチ実行状態　：　</span>
 		<?php
-			if($this->rform->current_batch['state'] == 1) echo 'リカバリなし';
-			else if($this->rform->current_batch['state'] == 2) echo 'リカバリあり';
-			else echo '不明';
+			if($this->rform->current_batch['state'] == 19) echo 'リカバリなし';
+			else if($this->rform->current_batch['state'] == 32) echo 'リカバリなし';
+			else if($this->rform->current_batch['state'] == 49) echo 'リカバリなし';
+			else if($this->rform->current_batch['state'] == 16) echo 'リカバリなし';
+			else if($this->rform->current_batch['state'] == 29) echo 'リカバリなし';
+			else if($this->rform->current_batch['state'] == 46) echo 'リカバリなし';
+			else echo 'リカバリあり';
 		?>
 	</p>
 	<p><span>　リカバリステータス　：　</span>
@@ -69,7 +73,7 @@ $this->headTitle($title);
 	
 	<hr style="border-top: 4px double #c0c0c0;width: 100%;height:3;">
 	
-	<form name="form" class="search_form" action="<?php echo sprintf($this->const->_APP_RECOVERY_LIST_PATH, $this->rform->current_batch['batch_id']).'&formvalue=selectItem' ?>" method="POST">
+	<form name="form" class="search_form" action="<?php echo sprintf($this->const->_APP_RECOVERY_LIST_PATH, $this->rform->current_batch['batch_log_id']).'&formvalue=selectItem' ?>" method="POST">
 		<p><span>　実行ステータス　：　</span>
 			<select name="status">
 				<?php 
@@ -130,18 +134,35 @@ $this->headTitle($title);
 				//No
 				if(isset($item["ROW_NUM"])) echo '<td class="no">'.$item["ROW_NUM"].'</td>';
 				//種別
-				echo '<td class="contents_type">'.'種別'.'</td>';
+				if( 1==$item["contents_type"] ) {
+					echo '<td class="contents_type">動画</td>';
+				}
+				elseif( 2==$item["contents_type"] ) {
+					echo '<td class="contents_type">画像</td>';
+				}
+				elseif( 3==$item["contents_type"] ) {
+					echo '<td class="contents_type">コメント</td>';
+				}
+				else {
+					echo '<td class="contents_type">不明</td>';
+				}
 				//コンテンツNo
 				if(isset($item["contents_id"])) echo '<td class="contents_id">'.$item["contents_id"].'</td>';			
 				//タイトル
 				if(isset($item["title"])) echo '<td class="title">'.$item["title"].'</td>';
 				else echo '<td class="title"></td>';
 				//ステータス
-				if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="recovery_state">リカバリ</td>';
-				else if($item["recovery_state"] == 54) echo '<td class="recovery_state">リカバリ済み</td>';
-				else echo '<td class="recovery_state">正常</td>';
+				if(in_array($item["import_state"], array('19','32','49','16','29','46'))) {
+					echo '<td class="recovery_state">正常</td>';
+				}
+				else {
+					if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="recovery_state">リカバリ</td>';
+					else if($item["recovery_state"] == 54) echo '<td class="recovery_state">リカバリ済み</td>';
+					else echo '<td class="recovery_state">不明</td>';
+				}
+				
 				//URL
-				if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $item["batch_id"], $item["contents_id"]).'">詳細</td>';
+				if(isset($item["recovery_state"]) && $item["recovery_state"] != 54) echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $item["batch_log_id"], $item["contents_id"]).'">詳細</td>';
 				echo '</tr>';
 
 			endforeach;

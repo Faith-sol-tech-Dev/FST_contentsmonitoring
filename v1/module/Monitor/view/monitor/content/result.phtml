@@ -214,12 +214,30 @@ $this->headTitle($title);
 				}
 				//タイトル
 				if(isset($item["title"])) echo '<td class="title">'.$item["title"].'</td>';
+				else echo '<td class="title"></td>';
 				//投稿者
 				if(isset($item["name"])) echo '<td class="usr_name">'.$item["name"].'</td>';
+				else echo '<td class="usr_name"></td>';
 				//投稿日時
 				if(isset($item["create_date"])) echo '<td class="date">'.$item["create_date"].'</td>';
+				else echo '<td class="date"></td>';
 				//ステータス
-				if(isset($item["check_state"])) echo '<td class="state">'.$this->cform->content_list_mode[$item["check_state"]].'</td>';
+				if(isset($item["check_state"])) {
+					if(isset($item["lock_user"])) {
+						echo '<td class="state">監視中</td>';
+					}
+					else {
+						echo '<td class="state">'.$this->cform->content_list_mode[$item["check_state"]].'</td>';
+					}
+				}
+				else {
+					if(isset($item["lock_user"])) {
+						echo '<td class="state">監視中</td>';
+					}
+					else {
+						echo '<td class="state">未監視</td>';
+					}
+				}
 				//URL
 				if(isset($item["contents_id"])) echo '<td class="url"><a href="'.sprintf($this->const->_APP_CONTENTS_DETAIL_PATH, $item["contents_id"]).'">&gt;&gt;</td>';
 				echo '</tr>';

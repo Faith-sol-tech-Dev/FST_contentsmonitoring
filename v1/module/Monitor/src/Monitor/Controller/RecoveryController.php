@@ -328,24 +328,24 @@ class RecoveryController extends CommonController
     			if( 'selectItem'==$param ) {
     				$aryData = array(
     						'batch_log_id'    => $batch_log_id,
-    						'status'          => $this->params()->fromPost( 'status', "" ),
+    						'content_state'   => $this->params()->fromPost( 'status', "" ),
     						'page_no'         => $this->params()->fromPost( 'p',"")
     				);
     			}
     			elseif( 'pagination'==$param ) {
     				$aryData = array(
     						'batch_log_id'    => $batch_log_id,
-    						'status'          => $this->params()->fromPost( 'hd_status', "" ),
+    						'content_state'   => $this->params()->fromPost( 'hd_status', "" ),
     						'page_no' 		  => $this->params()->fromPost( 'p',"")
     				);
      			}
-
+     			
      			if(!empty($aryData)) {
      				$aryRet = $rform->searchStatusChecker( $aryData );
      				if( false === $aryRet) {
 		    			// チェックエラー
 		    			$search_msg = $this->addErrorComment()['101'];
-		    		}
+     				}
 		    		elseif( false === $aryRet[0] ) {
 		    			// チェックエラー
 		    			$search_msg = $aryRet[1];
@@ -354,7 +354,7 @@ class RecoveryController extends CommonController
 		    			// 検索処理
 		    		    // バッチ情報取得
 		    		    $aryBatch = $rform->searchBatch( $aryData );
-	     				if( false === $aryBatch) {
+		    		    if( false === $aryBatch) {
 			    			// チェックエラー
 			    			$search_msg = $this->addDisplayComment()['batch_log_nodata'];
 		    			}
@@ -366,7 +366,8 @@ class RecoveryController extends CommonController
 		    		}
      				
 	    			// POSTデータをセット
-	    			$rform->current_status = $aryData['status'];
+	    			$rform->current_list_display_cnt = $count;
+		    		$rform->current_status = $aryData['content_state'];
 	    			$rform->current_page_no = $aryData['page_no'];
 	    			$pagination = $rform->setPagination($count);
 	    		
@@ -439,7 +440,7 @@ class RecoveryController extends CommonController
     	
     	try {
     		$param = array(
-    				'batch_id' => $this->params()->fromQuery('bid'),
+    				'batch_log_id' => $this->params()->fromQuery('bid'),
     				'contents_id' => $this->params()->fromQuery('cid'),
     		);
     		$param_reload = $this->params()->fromQuery('formvalue');
@@ -483,16 +484,14 @@ class RecoveryController extends CommonController
     				 echo("再取込です。");
     				 $user = $this->getUserData();
     				 $param["user_id"] = $user["user_id"];
+    				 $param["batch_contents_id"] = $rform->content_search_result["batch_contents_id"];
     				 $rform->insert_result = $rform->contentsReuptake($param);
     			}
     		}else{
-    			return( $this->redirect()->toUrl( APP_HOME_PATH.'?er=s_none' ) );
+    		 echo("22再取込です。");
+    		//	return( $this->redirect()->toUrl( str_replace(APP_RECOVERY_LIST_PATH, $param['batch_log_id']) ) );
     		}
-    		
-    		echo("<pre>");
-    		var_dump($rform->content_search_result);
-    		echo("</pre>");
-    		
+    		    		
     		if($request->isPost()){
     			// 検索結果情報を取得
     				$aryData = array(

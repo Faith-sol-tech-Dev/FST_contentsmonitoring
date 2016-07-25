@@ -564,7 +564,7 @@ class ContentDetailTable extends AbstractLocalAdapter implements AdapterAwareInt
     				.' ,url '
     				.' ,comment '
     				.' ,title '
-    				.' ,name '
+    				.' ,user '
     				.' ,create_date '
     				.' ,insert_user '
     				.' ,insert_date) '
@@ -576,7 +576,7 @@ class ContentDetailTable extends AbstractLocalAdapter implements AdapterAwareInt
     				.' ,:url '
     				.' ,:comment '
     				.' ,:title '
-    				.' ,:name '
+    				.' ,:user '
     				.' ,:create_date '
     				.' ,:insert_user '
     				.' ,:insert_date) ';
@@ -588,7 +588,7 @@ class ContentDetailTable extends AbstractLocalAdapter implements AdapterAwareInt
     						'url'					=> $param['url'],
     						'comment'				=> $param['comment'],
     						'title'					=> $param['title'],
-    						'name'					=> $param['name'],
+    						'user'					=> $param['user'],
     						'create_date'			=> $param['create_date'],
     						'insert_user'			=> $param['user_id'],
     						'insert_date'			=> $param['insert_date'],
@@ -602,7 +602,7 @@ class ContentDetailTable extends AbstractLocalAdapter implements AdapterAwareInt
     		Log::query(sprintf('SQL::setContentsDetailReuptake() param:url=%s',$param['url']));
     		Log::query(sprintf('SQL::setContentsDetailReuptake() param:comment=%s',$param['comment']));
     		Log::query(sprintf('SQL::setContentsDetailReuptake() param:title=%s',$param['title']));
-    		Log::query(sprintf('SQL::setContentsDetailReuptake() param:name=%s',$param['name']));
+    		Log::query(sprintf('SQL::setContentsDetailReuptake() param:user=%s',$param['user']));
     		Log::query(sprintf('SQL::setContentsDetailReuptake() param:create_date=%s',$param['create_date']));
     		Log::query(sprintf('SQL::setContentsDetailReuptake() param:insert_user=%s',$param['user_id']));
     		Log::query(sprintf('SQL::setContentsDetailReuptake() param:insert_date=%s',$param['insert_date']));

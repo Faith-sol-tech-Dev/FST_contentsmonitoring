@@ -187,8 +187,14 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
 			$params = array('batch_log_id'     => (int)$param['batch_log_id']);
 			
  			if(isset($param['content_state']) && $param['content_state'] != 0){
-  				$sql = $sql.' AND import_state = :content_state';
-    			$params['content_state'] = (int)$param['content_state'];
+	    		if(1==$param['content_state']) {
+   	    			//OK
+        			$sql .= '   AND import_state IN (19,32,49,16,29,46) ';
+    	   		}
+    	   		elseif(2==$param['content_state']) {
+    	   			//NG
+    	   			$sql .= '   AND import_state NOT IN (19,32,49,16,29,46) ';
+    	    	}
     		}
     		
     		Log::query(sprintf('SQL::getBatchDetailListCount() query=%s',$sql));
@@ -242,7 +248,9 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     		 
     		$sql =   'SELECT @rownum:=@rownum+1 as ROW_NUM'
     				.'    ,wb.batch_id '
+    				.'    ,wb.batch_log_id '
     				.'    ,wcd.contents_id '
+    				.'    ,wcd.contents_type '
     				.'    ,wcd.title '
     				.'    ,wcd.recovery_state '
     				.'    ,wcd.import_state '
@@ -256,8 +264,14 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     		$params = array( 'batch_log_id'   => (int)$param['batch_log_id'] );
     
     		if(isset($param['content_state']) && $param['content_state'] != 0){
-    			$sql = $sql.' AND wcd.import_state = :content_state';
-    			$params['content_state'] = (int)$param['content_state'];
+   	    		if(1==$param['content_state']) {
+   	    			//OK
+        			$sql .= '   AND import_state IN (19,32,49,16,29,46) ';
+    	   		}
+    	   		elseif(2==$param['content_state']) {
+    	   			//NG
+    	   			$sql .= '   AND import_state NOT IN (19,32,49,16,29,46) ';
+    	    	}
     		}
 
     		Log::query(sprintf('SQL::getBatchDetailList() query=%s',$sql));
@@ -310,8 +324,10 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     	try {
     		 
     		$sql =   'SELECT batch_contents_id '
+    				.'    ,wc.batch_log_id '
     				.'    ,wcd.contents_id '
     				.'    ,wcd.contents_type '
+    				//.'    ,wcd.sub_id '
     				.'    ,wcd.url '
     				.'    ,wcd.comment '
     				.'    ,wcd.title '
@@ -321,6 +337,7 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     				.'    ,wcd.import_date '
     				.'    ,wcd.error_reason '
     				.'    ,wcd.recovery_state '
+    				.'    ,s.service_id '
     				.'    ,s.service_name '
     				.' FROM WK_BATCH_LOG_CONTENTS as wc '
     				.' INNER JOIN WK_BATCH_LOG_CONTENTS_DETAIL as wcd '
@@ -334,7 +351,11 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     		$params = array( 'batch_log_id' => (int)$param['batch_log_id'],
     						 'contents_id'  => (int)$param['contents_id']
     					);
-    
+
+    		Log::query(sprintf('SQL::getBatchDetail() query=%s',$sql));
+    		if(isset($param['batch_log_id'])) Log::query(sprintf('SQL::getBatchDetail() param:batch_log_id=%s',$param['batch_log_id']));
+    		if(isset($param['contents_id'])) Log::query(sprintf('SQL::getBatchDetail() param:contents_id=%s',$param['contents_id']));
+    		
     		$stmt = $this->adapter->createStatement($sql);
     		$results = $stmt->execute($params);
     
@@ -348,25 +369,86 @@ class BatchLogContentDetailTable extends AbstractLocalAdapter implements Adapter
     		}
     	}
     	catch( \ErrorException $ee ) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetail() --  do not select from WK_BATCH_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetail() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $ee->getMessage());
     		throw new DbAccessException($ee->getMessage());
     	}
     	catch( \PDOException $pe ) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetail() --  do not select from WK_BATCH_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetail() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $pe->getMessage());
     		throw new DbAccessException($pe->getMessage());
     	}
     	catch (\Exception $e) {
-    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetail() --  do not select from WK_BATCH_DETAIL Table.');
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetail() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
     		Log::error(__FILE__, __LINE__, $e->getMessage());
     		throw new DbAccessException($e->getMessage());
     	}
     
     	$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
-    	Log::debug(__FILE__, __LINE__, 'INFO   getBatchDetail() --  select from WK_BATCH_DETAIL Table. get Batch Data. ('.$diff_time.')');
+    	Log::debug(__FILE__, __LINE__, 'INFO   getBatchDetail() --  select from WK_BATCH_LOG_CONTENTS_DETAIL Table. get Batch Data. ('.$diff_time.')');
     	return $aryData;
     }
+
+    /**
+     * 取込検索結果のbatch_detailのsubデータ取得
+     *
+     * @param  array $param   パラメータ
+     * @return       $row  WK_BATCH_DETAILテーブル情報
+     */
+    public function getBatchDetailToSub( $param )
+    {
+    	$start_time=microtime(true);
+    
+    	$aryData = array();
+    	try {
+    		 
+    		$sql =   'SELECT batch_contents_id '
+    				.'    ,contents_id '
+					.'    ,contents_type '
+					//.'    ,wcd.sub_id '
+					.' FROM WK_BATCH_LOG_CONTENTS_DETAIL '
+					.' WHERE batch_transaction_id = :batch_transaction_id '
+					.'   AND sub_id = 1 ';
+    
+    		$params = array( 'batch_transaction_id' => (int)$param['batch_transaction_id'],
+    			   		);
+    
+			Log::query(sprintf('SQL::getBatchDetailToSub() query=%s',$sql));
+			if(isset($param['batch_transaction_id'])) Log::query(sprintf('SQL::getBatchDetail() param:batch_transaction_id=%s',$param['batch_transaction_id']));
+    
+			$stmt = $this->adapter->createStatement($sql);
+			$results = $stmt->execute($params);
+
+			if ($results instanceof ResultInterface && $results->isQueryResult()) {
+				$resultSet = new ResultSet;
+				$resultSet->initialize($results);
+				foreach ($resultSet as $row) {
+					//array_push($aryData, (array)$row);
+					$aryData = (array)$row;
+				}
+			}
+    	}
+    	catch( \ErrorException $ee ) {
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailToSub() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
+    		Log::error(__FILE__, __LINE__, $ee->getMessage());
+    		throw new DbAccessException($ee->getMessage());
+    	}
+    	catch( \PDOException $pe ) {
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailToSub() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
+    		Log::error(__FILE__, __LINE__, $pe->getMessage());
+    		throw new DbAccessException($pe->getMessage());
+    	}
+    	catch (\Exception $e) {
+    		Log::debug(__FILE__, __LINE__, 'ERROR getBatchDetailToSub() --  do not select from WK_BATCH_LOG_CONTENTS_DETAIL Table.');
+    		Log::error(__FILE__, __LINE__, $e->getMessage());
+    		throw new DbAccessException($e->getMessage());
+    	}
+    
+    	$diff_time = Utility::formatMicrotime(microtime(true) - $start_time);
+    	Log::debug(__FILE__, __LINE__, 'INFO   getBatchDetailToSub() --  select from WK_BATCH_LOG_CONTENTS_DETAIL Table. get Batch Data. ('.$diff_time.')');
+    	return $aryData;
+    }
+    
     
     /**
      * バッチの再取込処理の反映

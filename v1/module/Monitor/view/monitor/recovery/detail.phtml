@@ -38,7 +38,7 @@ jQuery( function() {
 	<h1>取込結果詳細：</h1>
  	<div class="contents_activity">
  		<p><span>　バッチ番号　：　</span>
- 			<?php echo $this->rform->content_search_result['batch_id']?></p>
+ 			<?php echo $this->rform->content_search_result['batch_log_id']?></p>
  		<p><span>　対象サービス　：　</span>
  			<?php echo $this->sform->service_list[$this->rform->content_search_result['service_id']] ?></p>
  	</div>
@@ -46,7 +46,7 @@ jQuery( function() {
 	<div class="contents_comment">
 		<p id="alert_msg"><?php echo $this->display_comment_msg ?></p>
 		
-		<form class="search_form" action="<?php echo sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result["batch_id"], $this->rform->content_search_result["contents_id"]) ?>&formvalue=reload" method="POST">	
+		<form class="search_form" action="<?php echo sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result["batch_log_id"], $this->rform->content_search_result["contents_id"]) ?>&formvalue=reload" method="POST">	
 			<div>
 				<p><span>　コンテンツNo　：　</span><?php echo $this->rform->content_search_result['contents_id'] ?></p>
 				<p><span>　取込日時　：　</span><?php echo $this->rform->content_search_result['import_date'] ?></p>
@@ -56,17 +56,20 @@ jQuery( function() {
 				<?php if(!isset($this->rform->insert_result)){?>
 					<p><span>　取込エラー　：　</span><?php echo $this->rform->error_reason[$this->rform->content_search_result['error_reason']] ?></p>
 					<input class="search" type="submit" value=" 再取込　">
-					<p><span>　動画URL　：　</span><?php echo $this->rform->content_search_result['movie_url'] ?></p>
-					<p><span>　画像URL　：　</span><?php echo $this->rform->content_search_result['image_url'] ?></p>
+					<?php if(1==$this->rform->content_search_result['contents_type']): ?>
+					<p><span>　動画URL　：　</span><?php echo $this->rform->content_search_result['url'] ?></p>
+					<?php elseif(2==$this->rform->content_search_result['contents_type']): ?>
+					<p><span>　画像URL　：　</span><?php echo $this->rform->content_search_result['url'] ?></p>
+					<?php endif; ?>
 					<p><span>　タイトル　：　</span><?php echo $this->rform->content_search_result['title'] ?></p>
 					<p><span>　コメント　：　</span><?php echo $this->rform->content_search_result['comment'] ?></p>
 					<p><span>　作成日時　：　</span><?php echo $this->rform->content_search_result['create_date'] ?></p>
 				<?php } else if($this->rform->insert_result == true){?>
 					<p>再取込処理が正常に終了しました。</p>
-					<?php echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result['batch_id'], $this->rform->content_search_result['service_id']).'">戻る</td>';?>
+					<?php echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result['batch_log_id'], $this->rform->content_search_result['service_id']).'">戻る</td>';?>
 				<?php } else {?>
 					<p>再取込処理に失敗しました。</p>
-					<?php echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result['batch_id'], $this->rform->content_search_result['service_id']).'">戻る</td>';?>
+					<?php echo '<td class="url"><a href="'.sprintf($this->const->_APP_RECOVERY_DETAIL_PATH, $this->rform->content_search_result['batch_log_id'], $this->rform->content_search_result['service_id']).'">戻る</td>';?>
 				<?php }?>
 			
 			</div>
@@ -76,8 +79,3 @@ jQuery( function() {
 
 </div>
 
-<div class="jumbotron">
-    <h1><?php echo sprintf($this->translate('Welcome to %sZend Framework 2%s'), '<span class="zf-green">', '</span>') ?></h1>
-    <p><?php echo sprintf($this->translate('Congratulations! You have successfully installed the %sZF2 Skeleton Application%s. You are currently running Zend Framework version %s. This skeleton can serve as a simple starting point for you to begin building your application on ZF2.'), '<a href="https://github.com/zendframework/ZendSkeletonApplication" target="_blank">', '</a>', \Zend\Version\Version::VERSION) ?></p>
-    <p><a class="btn btn-success btn-lg" href="https://github.com/zendframework/zf2" target="_blank"><?php echo $this->translate('Fork Zend Framework 2 on GitHub') ?> &raquo;</a></p>
-</div>

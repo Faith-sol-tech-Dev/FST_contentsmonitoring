@@ -92,11 +92,11 @@ class LogClass
 		}
 	}
 	
-	private static function writePlain($log_name, $message, $backtrace)
+	private static function writePlain($log_name, $file, $line, $message, $backtrace)
 	{
 		if('development' == $_SERVER['APPLICATION_ENV']) {
 			//$buf = sprintf("%s(%s):\t %s", $file, $line, $message);
-			$buf = sprintf("[%s]: \t %s\t\t[%s(%s)]", "", $message, "", "");
+			$buf = sprintf("[%s]: \t %s\t\t[%s(%s)]", "", $message, $file, $line);
 			self::write('debug', $buf, false);
 		}
 	}
@@ -114,7 +114,7 @@ class LogClass
 
 	public static function query($message, $backtrace=false)
 	{
-		self::writePlain(self::QUERY, $message, $backtrace);
+		self::writePlain(self::QUERY, null, null, $message, $backtrace);
 	}
 	
 	public static function emerg($file, $line, $message, $backtrace=false)
@@ -124,7 +124,7 @@ class LogClass
 	
 	public static function debug($file, $line, $message, $backtrace=false)
 	{
-		self::writePlain(self::DEBUG, $message, $backtrace);
+		self::writePlain(self::DEBUG, $file, $line, $message, $backtrace);
 	}
 	
 	public static function notice($file, $line, $message, $backtrace=false)

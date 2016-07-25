@@ -439,6 +439,8 @@ class ContentForm extends Form
     		//取込期間(終了)
     		if( "" != ($message= Validation::validateForm($request, "import_date_max", "取込期間(終了)", false, 4, null, null)) ) {
     			return array(false, $message); }
+    		if( empty($request['import_date_max']) && !empty($request['import_date_min']) ) {
+				return array(false, '取込期間(終了)日時に値がありません。'); }
     		if( !empty($request['import_date_max']) && empty($request['import_date_min']) ) {
     			return array(false, '取込期間(開始)日時に値がありません。'); }
     	    if( !empty($request['import_date_max']) && ($request['import_date_max'] < $request['import_date_min']) ) {
@@ -449,7 +451,9 @@ class ContentForm extends Form
     		//チェック期間(終了)
     		if( "" != ($message= Validation::validateForm($request, "check_date_max", "チェック期間(終了)", false, 4, null, null)) ) {
     			return array(false, $message); }
-    	    if( !empty($request['check_date_max']) && empty($request['check_date_min']) ) {
+    	    if( empty($request['check_date_max']) && !empty($request['check_date_min']) ) {
+    	    	return array(false, 'チェック期間(終了)日時に値がありません。'); }
+    		if( !empty($request['check_date_max']) && empty($request['check_date_min']) ) {
     	    	return array(false, 'チェック期間(開始)日時に値がありません。'); }
     	    if( !empty($request['check_date_max']) && ($request['check_date_max'] < $request['check_date_min']) ) {
     	    	return array(false, 'チェック期間(開始)の値が不正です。'); }

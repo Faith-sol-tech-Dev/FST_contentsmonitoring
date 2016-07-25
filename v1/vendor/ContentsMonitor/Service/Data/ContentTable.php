@@ -250,6 +250,7 @@ class ContentTable extends AbstractLocalAdapter implements AdapterAwareInterface
     				.'    ,cd.url '
     				.'    ,cd.check_state '
     				.'    ,cd.check_result '
+    				.'    ,cd.lock_user '
     				.' FROM (SELECT @rownum:=0) as dummy ,TRN_CONTENTS as c '
     				.' INNER JOIN TRN_CONTENTS_DETAIL as cd ON ( cd.contents_id = c.contents_id ) '
     				.' INNER JOIN MST_SERVICE as s ON ( c.service_id = s.service_id ) '

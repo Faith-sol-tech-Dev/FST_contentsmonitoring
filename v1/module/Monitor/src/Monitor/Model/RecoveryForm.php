@@ -275,18 +275,15 @@ class RecoveryForm extends Form
 		}
 		catch( \DbAccessException $de ) {
 			Log::error(__FILE__, __LINE__, $de->getMessage());
-			Log::error(__FILE__, __LINE__, $de);
-			return false;
+			throw $de;
 		}
 		catch( \FormException $fe ) {
 			Log::error(__FILE__, __LINE__, $fe->getMessage());
-			Log::error(__FILE__, __LINE__, $fe);
-			return false;
+			throw $fe;
 		}
 		catch( \Exception $e ) {
 			Log::error(__FILE__, __LINE__, $e->getMessage());
-			Log::error(__FILE__, __LINE__, $e);
-			return false;
+			throw $e;
 		}
 		finally
 		{
@@ -392,11 +389,32 @@ class RecoveryForm extends Form
 			$conn->beginTransaction();
 			
 			//必要データ取得
-			$data = $this->batchTable->getReuptake( $request );
+			$data = $this->batchLogTable->getReuptake( $request );
 			$data["user_id"] = $request["user_id"];
 			$data["insert_date"] = date("Y-m-d H:i:s");
 			
+			//Sub_idを選定
+			if(1== $data["sub_id"])
+			{
+				//自身が親コンテンツ
+				//自身が親コンテンツ、もしくは子コンテンツを持たない場合は、値なし
+				$data["contents_parent_id"] =  "";
+			}
+			else 
+			{
+				//自身が子コンテンツ（親コンテンツを取得する）
+				$arySub = $this->batchLogContentDetailTable->getBatchDetailToSub($request);
+				$data["contents_parent_id"] = $arySub["contents_id"];
+			}
+			//TRN＿CONTENTS系にセットする親コンテンツIDをセット
+			//$data配列にsub_idはセットされている状態
+			//コンテンツの登録を実施。
+			//TRN_CONTENTS,TRN_CONTENTS_DETAILテーブルにデータ登録
+			//WK_BATCHテーブルのステータスを更新
+			  //WK_BATCH_LOG_CONTENTS_DETAILテーブルのステータスを更新
+			  //WK_BATCH_LOGテーブルのステータスを更新
 			
+/*↓破棄			
 			//動画がある場合
 			if(isset($data["movie_url"])){
 				if(!isset($data["contents_type"])){
@@ -497,12 +515,12 @@ class RecoveryForm extends Form
 			if(!isset($data["movie_url"]) && !isset($data["image_url"]) &&!isset($data["comment"])){
 				//おかしい
 			}
-
-			//WK_BATCH_DETAILの更新
+*/
+			//WK_BATCH_LOG_CONTENTS_DETAILの更新
 			$this->batchLogContentDetailTable->ReuptakeDetailResult( $request );
 			
 			//WK_BATCHを更新するかどうかの処理が必要ではないか？
-			$detail_list = $this->batchDetailTable->getBatchDetailList( $request );
+			$detail_list = $this->batchLogContentDetailTable->getBatchDetailList( $request );
 			$update_flag = true;
 			foreach ($detail_list as $list){
 				if(isset($list['recovery_state']) && $list['recovery_state'] != 54){
@@ -617,12 +635,11 @@ class RecoveryForm extends Form
 		try {
 			$message = "";
 			//コンテンツの種類
-			if( "" != ($message= Validation::validateForm($request, "status", "実行ステータス", true, 1, null, null)) ) {
+			if( "" != ($message= Validation::validateForm($request, "content_state", "実行ステータス", true, 1, null, null)) ) {
 				return array(false, $message); }
 			//ページ数
 			if( "" != ($message= Validation::validateForm($request, "page_no", "ページャ数", false, 1, null, null)) ) {
 				return array(false, $message); }
-	
 		}
 		catch( \FormException $fe ) {
 			Log::error(__FILE__, __LINE__, $fe->getMessage());

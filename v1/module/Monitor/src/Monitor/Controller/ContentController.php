@@ -171,6 +171,14 @@ class ContentController extends CommonController
 	    	if($request->isPost()){
 	    		// 検索結果情報を取得
 	    		if( 'selectItem'==$param ) {
+	    			$imp_min_date = empty($this->params()->fromPost( 'content_text_impDate_str', "" )) ? 
+	    									$this->params()->fromPost( 'content_text_impDate_str', "" ) : $this->params()->fromPost( 'content_text_impDate_str', "" ).DATE_MIN_TIME;
+	    			$imp_max_date = empty($this->params()->fromPost( 'content_text_impDate_end', "" )) ? 
+	    									$this->params()->fromPost( 'content_text_impDate_end', "" ) : $this->params()->fromPost( 'content_text_impDate_end', "" ).DATE_MAX_TIME;
+	    			$chk_min_date = empty($this->params()->fromPost( 'content_text_ckDate_str', "" )) ? 
+	    									$this->params()->fromPost( 'content_text_ckDate_str', "" ) : $this->params()->fromPost( 'content_text_ckDate_str', "" ).DATE_MIN_TIME;
+	    			$chk_max_date = empty($this->params()->fromPost( 'content_text_ckDate_end', "" )) ? 
+	    									$this->params()->fromPost( 'content_text_ckDate_end', "" ) : $this->params()->fromPost( 'content_text_ckDate_end', "" ).DATE_MAX_TIME;
 	    			// 検索ボタンクリック時
 		    		$aryData = array(
 		    					'service_id'      => $service_cd,
@@ -181,15 +189,23 @@ class ContentController extends CommonController
 		    					'check_result1'   => $this->params()->fromPost( 'content_list_stats1', "" ),
 		    					'check_result2'   => $this->params()->fromPost( 'content_list_stats2', "" ),
 		    					'check_result3'   => $this->params()->fromPost( 'content_list_stats3', "" ),
-		    					'import_date_min' => $this->params()->fromPost( 'content_text_impDate_str', "" ),
-		    					'import_date_max' => $this->params()->fromPost( 'content_text_impDate_end', "" ),
-		    					'check_date_min'  => $this->params()->fromPost( 'content_text_ckDate_str', "" ),
-		    					'check_date_max'  => $this->params()->fromPost( 'content_text_ckDate_end', "" ),
+		    					'import_date_min' => $imp_min_date,
+		    					'import_date_max' => $imp_max_date,
+		    					'check_date_min'  => $chk_min_date,
+		    					'check_date_max'  => $chk_max_date,
 		    					'display_cnt'     => $this->params()->fromPost( 'content_list_display_cnt', "" ),
 		    					'page_no'         => $this->params()->fromPost( 'p',"")
 		    				);
 	    		}
 	    		elseif( 'pagination'==$param ) {
+	    			$imp_min_date = empty($this->params()->fromPost( 'hd_content_text_impDate_str', "" )) ? 
+	    									$this->params()->fromPost( 'hd_content_text_impDate_str', "" ) : $this->params()->fromPost( 'hd_content_text_impDate_str', "" ).DATE_MIN_TIME;
+	    			$imp_max_date = empty($this->params()->fromPost( 'hd_content_text_impDate_end', "" )) ? 
+	    									$this->params()->fromPost( 'hd_content_text_impDate_end', "" ) : $this->params()->fromPost( 'hd_content_text_impDate_end', "" ).DATE_MAX_TIME;
+	    			$chk_min_date = empty($this->params()->fromPost( 'hd_content_text_ckDate_str', "" )) ? 
+	    									$this->params()->fromPost( 'hd_content_text_ckDate_str', "" ) : $this->params()->fromPost( 'hd_content_text_ckDate_str', "" ).DATE_MIN_TIME;
+	    			$chk_max_date = empty($this->params()->fromPost( 'hd_content_text_ckDate_end', "" )) ? 
+	    									$this->params()->fromPost( 'hd_content_text_ckDate_end', "" ) : $this->params()->fromPost( 'hd_content_text_ckDate_end', "" ).DATE_MAX_TIME;	    			
 	    			// ページャリンク クリック時
 	    			$aryData = array(
 		    					'service_id'      => $service_cd,
@@ -200,10 +216,10 @@ class ContentController extends CommonController
 	    						'check_result1'   => $this->params()->fromPost( 'hd_content_list_stats1', "" ),
 	    						'check_result2'   => $this->params()->fromPost( 'hd_content_list_stats2', "" ),
 	    						'check_result3'   => $this->params()->fromPost( 'hd_content_list_stats3', "" ),
-	    						'import_date_min' => $this->params()->fromPost( 'hd_content_text_impDate_str', "" ),
-	    						'import_date_max' => $this->params()->fromPost( 'hd_content_text_impDate_end', "" ),
-	    						'check_date_min'  => $this->params()->fromPost( 'hd_content_text_ckDate_str', "" ),
-	    						'check_date_max'  => $this->params()->fromPost( 'hd_content_text_ckDate_end', "" ),
+	    						'import_date_min' => $imp_min_date,
+	    						'import_date_max' => $imp_max_date,
+	    						'check_date_min'  => $chk_min_date,
+	    						'check_date_max'  => $chk_max_date,
 	    						'display_cnt'     => $this->params()->fromPost( 'hd_content_list_display_cnt', "" ),
 	    						'page_no'         => $this->params()->fromPost('p',"")
 	    			);
